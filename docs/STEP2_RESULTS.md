@@ -10,9 +10,7 @@ Commands run:
 ```bash
 ./gradlew assembleDebug assembleDebugAndroidTest assembleRelease
 ./gradlew testDebugUnitTest
-./gradlew :nfc-test:allDevicesGroupAndroidTest        # 45 spike tests × 3 APIs
-./gradlew :nfc-test-api:api30DebugAndroidTest         # NfcReader on an emulator
-./gradlew :sample:allDevicesGroupAndroidTest          # e2e × 3 APIs
+./gradlew allDevicesGroupAndroidTest                # the three modules × 3 APIs
 ./gradlew :sample:verifyReleaseHasNoNfcTest
 ```
 
@@ -22,7 +20,10 @@ Commands run:
 |---|---|---|---|
 | `:nfc-test` (spike, no regression) | 45/45 OK | 45/45 OK | 45/45 OK |
 | `:sample` (end to end) | 12/12 OK | 12/12 OK | 12/12 OK |
-| `:nfc-test-api` | 2/2 OK | not run | not run |
+| `:nfc-test-api` | 2/2 OK | 2/2 OK | 2/2 OK |
+
+The root alias `./gradlew allDevicesGroupAndroidTest` runs the three modules and
+finished with **BUILD SUCCESSFUL**.
 
 Tests JVM (`testDebugUnitTest`): `TagSpecParserTest` 11/11 y
 `NfcReadersDefaultTest` 2/2.
