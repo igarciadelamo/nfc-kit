@@ -1,10 +1,7 @@
 # nfc-test spike
 
-Proof of concept: build an `android.nfc.Tag` with an `NdefMessage` without NFC hardware,
-to inject it into emulators.
-
-Requirements: JDK 17, Android SDK (platform-tools, emulator) and ~6 GB free for the
-API 30/34/36 system images.
+Builds an `android.nfc.Tag` with `NdefMessage` without NFC hardware, to inject it into
+emulators. Requires JDK 17, Android SDK (platform-tools, emulator) and ~6 GB free.
 
 ```bash
 export JAVA_HOME=/path/to/jdk-17
@@ -15,7 +12,6 @@ export ANDROID_HOME=$HOME/Library/Android/sdk
 adb logcat -s NfcTestDiag NfcTestLimits            # diagnostics
 ```
 
-Reports: `library/build/reports/androidTests/managedDevice/`
-
-Documentation: [`docs/SPIKE_RESULTS.md`](docs/SPIKE_RESULTS.md) and
-[`docs/PARCEL_LAYOUTS.md`](docs/PARCEL_LAYOUTS.md).
+Reports: `library/build/reports/androidTests/managedDevice/`.
+Details and conclusion: [`docs/SPIKE_RESULTS.md`](docs/SPIKE_RESULTS.md);
+Parcel layout: [`docs/PARCEL_LAYOUTS.md`](docs/PARCEL_LAYOUTS.md).
