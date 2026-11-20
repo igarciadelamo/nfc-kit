@@ -13,5 +13,6 @@ adb logcat -s NfcTestDiag NfcTestLimits            # diagnostics
 ```
 
 Reports: `library/build/reports/androidTests/managedDevice/`.
+`REFLECTION` needs `hidden_api_policy=1` (see `docs/STEP2_RESULTS.md` §4).
 Details and conclusion: [`docs/SPIKE_RESULTS.md`](docs/SPIKE_RESULTS.md);
 Parcel layout: [`docs/PARCEL_LAYOUTS.md`](docs/PARCEL_LAYOUTS.md).
