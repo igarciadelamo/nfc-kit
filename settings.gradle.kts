@@ -16,4 +16,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "nfc-test"
 
-include(":nfc-test-api", ":nfc-test")
+include(":nfc-test-api", ":nfc-test", ":sample")

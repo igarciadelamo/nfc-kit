@@ -1,0 +1,8 @@
+{
+  "uid": "01020304",
+  "readOnly": false,
+  "records": [
+    {"type": "uri", "value": "https://txoka.app"},
+    {"type": "text", "lang": "es", "value": "hola"}
+  ]
+}
