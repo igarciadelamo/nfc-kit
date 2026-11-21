@@ -19,7 +19,7 @@ Commands run:
 | Module | API 30 | API 34 | API 36 |
 |---|---|---|---|
 | `:nfc-test` (spike, no regression) | 45/45 OK | 45/45 OK | 45/45 OK |
-| `:sample` (end to end) | 12/12 OK | 12/12 OK | 12/12 OK |
+| `:sample` (end to end) | 13/13 OK | 13/13 OK | 13/13 OK |
 | `:nfc-test-api` | 2/2 OK | 2/2 OK | 2/2 OK |
 
 The root alias `./gradlew allDevicesGroupAndroidTest` runs the three modules and
@@ -38,27 +38,14 @@ Every scenario is exercised with the same command a person would use:
 
 | Scenario | Path | API 30 | API 34 | API 36 |
 |---|---|---|---|---|
-| 2-record tag reaches `onNewIntent` with `ACTION_NDEF_DISCOVERED`, usable `EXTRA_TAG`, `EXTRA_ID` and `data=https://txoka.app` | foreground | OK | OK | OK |
-| 2-record tag reaches the callback | reader | OK | OK | OK |
-| Callback runs on a non-main thread (`NfcTest-binder`) | reader | OK | OK | OK |
-| First URI record: resolves the `NDEF_DISCOVERED` filter and opens `IntentActivity` | implicit | OK | OK | OK |
-| First text record: falls back to `TAG_DISCOVERED` | implicit | OK | OK | OK |
-| `auto` with an active reader mode uses reader | auto | OK | OK | OK |
-| `auto` without reader and with `IntentActivity` on top uses foreground | auto | OK | OK | OK |
-| Invalid JSON or invalid UID → `result=2` | any | OK | OK | OK |
-| `mode=reader` without an active reader → `result=4` | reader | OK | OK | OK |
-| `mode=foreground` without a foreground Activity → `result=3` | foreground | OK | OK | OK |
-| After `onPause`/`disable()` the reader stops receiving → `result=4` | reader | OK | OK | OK |
-| 7-byte UID and 3 records (URI + MIME vcard + external) | foreground | OK | OK | OK |
-| `recreate()` of the Activity leaves no stuck callback and the reader keeps delivering | reader | OK | OK | OK |
-| One tag per reader does not also produce an Intent delivery (single entry) | reader | OK | OK | OK |
 
 Logcat evidence (`adb logcat -s NfcTest`), for example on API 30:
 
 ```
 NfcTest : request mode=reader -> result=1 data="delivered via reader"
-NfcTest : request mode=implicit -> result=1 data="delivered via implicit NDEF_DISCOVERED"
-NfcTest : request mode=implicit -> result=1 data="delivered via implicit TAG_DISCOVERED"
+NfcTest : request mode=implicit -> result=1 data="dispatched via implicit NDEF_DISCOVERED"
+NfcTest : request mode=implicit -> result=1 data="dispatched via implicit TAG_DISCOVERED"
+NfcTest : request mode=implicit -> result=3 data="app in background: implicit needs a foreground activity"
 NfcTest : request mode=foreground -> result=3 data="no foreground activity"
 NfcTest : intent action=android.nfc.action.NDEF_DISCOVERED data=https://txoka.app uid=01020304
            records=[uri: https://txoka.app, text: hola]
@@ -102,44 +89,50 @@ that only an explicit call replaces it.
 
 | Risk | Result |
 |---|---|
-| Freshly installed app in *stopped* state: does not receive broadcasts without `-f 32` | Verified on API 30 (AOSP emulator): `pm clear` → `stopped=true`; broadcast without flag → `result=0`; with `-f 32` → `result=3` (received, no Activity). The script uses `-f 32`. |
-| Android 10+ blocks starting Activities from the background | The `foreground`/`implicit` modes start from the resumed Activity. Without a foreground Activity, `foreground` returns 3. `implicit` tries `context.startActivity` with `NEW_TASK`; on the background Android may block it and the code would return 1 even though nothing opens: **NOT VERIFIED** and documented as a limitation. |
+| App just installed in *stopped* state: does not receive broadcasts without `-f 32` | Verified on API 30 (AOSP emulator): `pm clear` → `stopped=true`; broadcast without the flag → `result=0`; with `-f 32` → `result=3` (received, no Activity). The script uses `-f 32`. |
+| Android 10+ blocks launching Activities from the background | The `foreground`/`implicit` modes launch from the resumed Activity. Without a foreground Activity, both return `result=3`; `implicit` adds the message "app in background: implicit needs a foreground activity". Verified on API 30/34/36: nothing is delivered after 2 s. |
 | Android 14+ blocks implicit intents to non-exported components | `IntentActivity` is `exported=true`, as real dispatch requires. Verified on API 34/36. |
-| Double dispatch (reader + intent) | Verified: one delivery per tag in reader mode. |
+| Double dispatch (reader + intent) | Verified: a single delivery per tag in reader mode. |
 | Callback thread | Verified: `NfcTest-binder`, never `main`. |
-| Lifecycle: Activity destroyed/recreated | Verified: `disable()` and `onActivityDestroyed` clear the callback; `recreate()` re-registers and delivers. |
+| Lifecycle: Activity destroyed/recreated | Verified: `disable()` and `onActivityDestroyed` clear the callback; `recreate()` registers again and delivers. |
 | `DUMP` permission on some API | Verified on 30, 34 and 36; no fallback was needed. |
-| `ACTION_TECH_DISCOVERED` matching by XML tech-list | **Not emulated**: resolves by action only. The sample has no TECH filter, so the text case falls back to `TAG_DISCOVERED`. |
+| `ACTION_TECH_DISCOVERED` matching by tech-list XML | **Not emulated**: it only resolves by action. The sample has no TECH filter, so the text case falls back to `TAG_DISCOVERED`. |
 
 ## 6. Problems found and resolution
 
 1. **`ActivityScenario.close()` timed out** when the dispatcher had opened
-   `IntentActivity` on top: the scenario's Activity stayed `PAUSED` and never reached
-   `DESTROYED`. The fix finishes every resumed/started/paused Activity first via
-   `ActivityLifecycleMonitorRegistry` and then closes the scenario.
+   `IntentActivity` on top: the scenario Activity stayed `PAUSED` and never reached
+   `DESTROYED`. The fix ends every resumed/started/paused Activity first.
 2. **The launch `Intent` (`ACTION_MAIN`) was registered as a tag**: the first
-   `await` returned that delivery. `IntentActivity` now ignores any action that does
-   not start with `android.nfc.action.`.
-3. **API 30 returns `Parcelable[]`, not `NdefMessage[]`**, in
-   `getParcelableArrayExtra`. The direct cast threw `ClassCastException`; the fix
-   filters with `filterIsInstance<NdefMessage>()` below API 33.
-4. **GMD cannot be configured from a script plugin** (`apply(from=...)`) because the
-   script classpath does not include the AGP API. Moved to a convention in the root
-   `build.gradle.kts` (`subprojects` + `pluginManager.withPlugin`), without
+   `await` returned that delivery. `IntentActivity` now ignores any action that
+   does not start with `android.nfc.action.`.
+3. **API 30 returns `Parcelable[]`**, not `NdefMessage[]`, in
+   `getParcelableArrayExtra`. The fix filters with `filterIsInstance<NdefMessage>()`
+   below API 33.
+4. **GMD cannot be configured from a plugin script** (`apply(from=...)`) because
+   the script classpath does not include the AGP API. It moved to a convention in
+   the root `build.gradle.kts` (`subprojects` + `pluginManager.withPlugin`), without
    `buildSrc` and without duplicating the block.
 5. **`devices[...]` no longer exists in AGP 9.5** (it came from step 1): the
-   references returned by `localDevices.create(...)` are used.
+   references returned by `localDevices.create(...)` are used instead.
+6. **`implicit` without a resumed Activity returned a false `result=1`**: it called
+   `context.startActivity` with `NEW_TASK` and Android 10+ blocked it silently.
+   Now, if the cascade resolves but there is no resumed Activity, it returns
+   `result=3` with "app in background: implicit needs a foreground activity";
+   `startActivity` catches `ActivityNotFoundException` and `SecurityException`
+   (result 5). Success messages now say "dispatched via implicit ..." because only
+   the Intent is launched, not processed.
 
 ## 7. Limitations
 
-- The injected tag serves discovery (extras and Intent). `connect()`,
+- The injected tag is for discovery (extras and Intent). `connect()`,
   `readNdefMessage()` and `writeNdefMessage()` keep failing as in step 1:
   there is no `INfcTag`.
-- `implicit` approximates the system cascade; it does not evaluate XML tech-lists or
-  priorities between apps. It only resolves against its own package.
+- `implicit` approximates the system cascade; it does not evaluate tech-lists XML
+  or priorities between apps. It only resolves against its own package.
 - The spike's `REFLECTION` still needs relaxed hidden API.
-- The debug module must not be published: `verifyReleaseHasNoNfcTest` prevents it in
-  the sample, but a consuming app must use `debugImplementation`.
+- The debug module must not be published: `verifyReleaseHasNoNfcTest` prevents it
+  in the sample, but a consumer app must use `debugImplementation`.
 
 ## 8. Conclusion
 

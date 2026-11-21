@@ -26,8 +26,9 @@ scripts/nfc-tap.sh <package> scripts/examples/uri-text.json foreground
 adb shell am broadcast -a dev.nfctest.TAP -p <pkg> -f 32 --es tag_b64 <b64> --es mode auto
 ```
 
-Modes: `auto` (default), `reader`, `foreground`, `implicit`. Results: `1`
-delivered, `2` invalid tag, `3` no destination, `4` reader not active,
+Modes: `auto` (default), `reader`, `foreground`, `implicit`. `foreground` and
+`implicit` require the app in the foreground; without an Activity they return `3`.
+Results: `1` delivered, `2` invalid tag, `3` no destination, `4` reader not active,
 `5` unexpected error.
 
 ## JSON

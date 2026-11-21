@@ -130,6 +130,20 @@ class NfcTapEndToEndTest {
         assertEquals(listOf("uri: https://txoka.app", "text: hola"), delivery.records)
     }
 
+    @Test
+    fun implicitWithoutForegroundActivityReturnsResult3() {
+        finishAllActivities()
+
+        val result = broadcast(URI_TEXT, "implicit")
+
+        assertEquals(result.output, 3, result.code)
+        Thread.sleep(2_000)
+        assertTrue(
+            "No delivery expected without a foreground activity",
+            ReceivedTags.all.isEmpty(),
+        )
+    }
+
     // 4. implicit: TAG_DISCOVERED fallback ------------------------------------
 
     @Test

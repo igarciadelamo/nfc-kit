@@ -1,5 +1,6 @@
 package dev.nfctest
 
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -95,6 +96,9 @@ class TagDispatcher(
      *
      * TECH_DISCOVERED is resolved by action only; the tech-list XML match is not
      * emulated (documented approximation).
+     *
+     * Needs a resumed Activity: background activity starts are blocked on
+     * Android 10+, so without one this returns [CODE_NO_DESTINATION].
      */
     @Suppress("DEPRECATION")
     private fun deliverImplicit(spec: TagSpec, tag: Tag): DeliveryResult {
@@ -117,25 +121,34 @@ class TagDispatcher(
             val matches = context.packageManager.queryIntentActivities(intent, 0)
             if (matches.isEmpty()) continue
 
+            // Android 10+ blocks background activity starts silently. Starting
+            // from the application context would report success without opening
+            // anything, so require a resumed Activity instead.
             val activity = tracker.resumed
+                ?: return DeliveryResult(
+                    CODE_NO_DESTINATION,
+                    "app in background: implicit needs a foreground activity",
+                )
+
             return try {
-                if (activity != null) {
-                    activity.startActivity(intent)
-                } else {
-                    // Background activity starts are blocked on Android 10+; this
-                    // branch only exists for completeness.
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    context.startActivity(intent)
-                }
-                DeliveryResult(CODE_DELIVERED, "delivered via implicit ${action.substringAfterLast('.')}")
-            } catch (t: Throwable) {
-                return DeliveryResult(
+                activity.startActivity(intent)
+                DeliveryResult(
+                    CODE_DELIVERED,
+                    "dispatched via implicit ${action.substringAfterLast('.')}",
+                )
+            } catch (e: ActivityNotFoundException) {
+                DeliveryResult(
                     CODE_UNEXPECTED,
-                    "implicit startActivity failed: ${t.javaClass.name}: ${t.message}",
+                    "implicit startActivity failed: ${e.javaClass.name}: ${e.message}",
+                )
+            } catch (e: SecurityException) {
+                DeliveryResult(
+                    CODE_UNEXPECTED,
+                    "implicit startActivity failed: ${e.javaClass.name}: ${e.message}",
                 )
             }
         }
-        return DeliveryResult(CODE_NO_DESTINATION, "no foreground activity or matching intent-filter")
+        return DeliveryResult(CODE_NO_DESTINATION, "no matching intent-filter")
     }
 
     /** Mirrors the extras the platform puts on a discovered-tag Intent. */
