@@ -3,8 +3,6 @@ package dev.nfctest
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
-import android.nfc.NfcAdapter
 import android.nfc.Tag
 import android.util.Log
 
@@ -36,6 +34,8 @@ class TagDispatcher(
     private val reader: InjectableNfcReader,
 ) {
 
+    private val resolver = NfcIntentResolver(context)
+
     fun dispatch(spec: TagSpec, mode: DeliveryMode): DeliveryResult {
         val tag = try {
             spec.toTag()
@@ -66,7 +66,7 @@ class TagDispatcher(
 
     private fun deliverToReader(tag: Tag): DeliveryResult =
         if (reader.deliver(tag)) {
-            DeliveryResult(CODE_DELIVERED, "delivered via reader")
+            DeliveryResult(CODE_DELIVERED, "dispatched via reader")
         } else {
             DeliveryResult(CODE_NO_READER, "no active reader mode")
         }
@@ -75,13 +75,13 @@ class TagDispatcher(
         val activity = tracker.resumed
             ?: return DeliveryResult(CODE_NO_DESTINATION, "no foreground activity")
 
-        val intent = ndefIntent(spec, tag).apply {
+        val intent = NfcIntentResolver.ndefIntent(spec, tag).apply {
             setClass(activity, activity.javaClass)
             addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
         }
         return try {
             activity.startActivity(intent)
-            DeliveryResult(CODE_DELIVERED, "delivered via foreground intent")
+            DeliveryResult(CODE_DELIVERED, "dispatched via foreground intent")
         } catch (t: Throwable) {
             DeliveryResult(
                 CODE_UNEXPECTED,
@@ -94,75 +94,39 @@ class TagDispatcher(
      * Emulates the platform cascade against this app's own intent filters:
      * NDEF_DISCOVERED, then TECH_DISCOVERED, then TAG_DISCOVERED.
      *
-     * TECH_DISCOVERED is resolved by action only; the tech-list XML match is not
-     * emulated (documented approximation).
-     *
      * Needs a resumed Activity: background activity starts are blocked on
      * Android 10+, so without one this returns [CODE_NO_DESTINATION].
      */
-    @Suppress("DEPRECATION")
     private fun deliverImplicit(spec: TagSpec, tag: Tag): DeliveryResult {
-        val base = ndefIntent(spec, tag)
-        val cascade = listOf(
-            NfcAdapter.ACTION_NDEF_DISCOVERED,
-            NfcAdapter.ACTION_TECH_DISCOVERED,
-            NfcAdapter.ACTION_TAG_DISCOVERED,
-        )
+        val resolution = resolver.resolve(spec, tag)
+            ?: return DeliveryResult(CODE_NO_DESTINATION, "no matching intent-filter")
 
-        for (action in cascade) {
-            val intent = Intent(base).apply {
-                this.action = action
-                setPackage(context.packageName)
-                if (action != NfcAdapter.ACTION_NDEF_DISCOVERED) {
-                    data = null
-                    type = null
-                }
-            }
-            val matches = context.packageManager.queryIntentActivities(intent, 0)
-            if (matches.isEmpty()) continue
+        // Android 10+ blocks background activity starts silently. Starting
+        // from the application context would report success without opening
+        // anything, so require a resumed Activity instead.
+        val activity = tracker.resumed
+            ?: return DeliveryResult(
+                CODE_NO_DESTINATION,
+                "app in background: implicit needs a foreground activity",
+            )
 
-            // Android 10+ blocks background activity starts silently. Starting
-            // from the application context would report success without opening
-            // anything, so require a resumed Activity instead.
-            val activity = tracker.resumed
-                ?: return DeliveryResult(
-                    CODE_NO_DESTINATION,
-                    "app in background: implicit needs a foreground activity",
-                )
-
-            return try {
-                activity.startActivity(intent)
-                DeliveryResult(
-                    CODE_DELIVERED,
-                    "dispatched via implicit ${action.substringAfterLast('.')}",
-                )
-            } catch (e: ActivityNotFoundException) {
-                DeliveryResult(
-                    CODE_UNEXPECTED,
-                    "implicit startActivity failed: ${e.javaClass.name}: ${e.message}",
-                )
-            } catch (e: SecurityException) {
-                DeliveryResult(
-                    CODE_UNEXPECTED,
-                    "implicit startActivity failed: ${e.javaClass.name}: ${e.message}",
-                )
-            }
+        return try {
+            activity.startActivity(resolution.intent)
+            DeliveryResult(
+                CODE_DELIVERED,
+                "dispatched via implicit ${resolution.action.substringAfterLast('.')}",
+            )
+        } catch (e: ActivityNotFoundException) {
+            DeliveryResult(
+                CODE_UNEXPECTED,
+                "implicit startActivity failed: ${e.javaClass.name}: ${e.message}",
+            )
+        } catch (e: SecurityException) {
+            DeliveryResult(
+                CODE_UNEXPECTED,
+                "implicit startActivity failed: ${e.javaClass.name}: ${e.message}",
+            )
         }
-        return DeliveryResult(CODE_NO_DESTINATION, "no matching intent-filter")
-    }
-
-    /** Mirrors the extras the platform puts on a discovered-tag Intent. */
-    private fun ndefIntent(spec: TagSpec, tag: Tag): Intent {
-        val intent = Intent(NfcAdapter.ACTION_NDEF_DISCOVERED)
-        intent.putExtra(NfcAdapter.EXTRA_TAG, tag)
-        intent.putExtra(NfcAdapter.EXTRA_ID, tag.id)
-        intent.putExtra(NfcAdapter.EXTRA_NDEF_MESSAGES, arrayOf(spec.toNdefMessage()))
-        when (val first = spec.records.first()) {
-            is TagRecord.Uri -> intent.data = Uri.parse(first.value)
-            is TagRecord.Mime -> intent.type = first.mime
-            else -> Unit
-        }
-        return intent
     }
 
     companion object {

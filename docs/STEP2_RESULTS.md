@@ -42,13 +42,12 @@ Every scenario is exercised with the same command a person would use:
 Logcat evidence (`adb logcat -s NfcTest`), for example on API 30:
 
 ```
-NfcTest : request mode=reader -> result=1 data="delivered via reader"
+NfcTest : request mode=reader -> result=1 data="dispatched via reader"
 NfcTest : request mode=implicit -> result=1 data="dispatched via implicit NDEF_DISCOVERED"
 NfcTest : request mode=implicit -> result=1 data="dispatched via implicit TAG_DISCOVERED"
 NfcTest : request mode=implicit -> result=3 data="app in background: implicit needs a foreground activity"
 NfcTest : request mode=foreground -> result=3 data="no foreground activity"
-NfcTest : intent action=android.nfc.action.NDEF_DISCOVERED data=https://txoka.app uid=01020304
-           records=[uri: https://txoka.app, text: hola]
+NfcSample : path=onNewIntent action=android.nfc.action.NDEF_DISCOVERED data=https://txoka.app uid=01020304 records=[uri: https://txoka.app, text: hola]
 ```
 
 ## 3. `DUMP` permission
@@ -61,8 +60,8 @@ In addition, `scripts/nfc-tap.sh` was tested against a manually started API 30
 emulator:
 
 ```
-Broadcast completed: result=1, data="delivered via reader"            (exit 0)
-Broadcast completed: result=1, data="delivered via foreground intent"  (exit 0)
+Broadcast completed: result=1, data="dispatched via reader"             (exit 0)
+Broadcast completed: result=1, data="dispatched via foreground intent"  (exit 0)
 ```
 
 Sending from another app without `DUMP` was not tested; by the semantics of
