@@ -15,6 +15,8 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
+import org.junit.Assume.assumeTrue
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
@@ -34,6 +36,15 @@ class TagFactoryTest(private val strategy: TagStrategy) {
         private fun twoRecordMessage(): NdefMessage = NdefMessage(
             NdefRecord.createUri("https://example.com"),
             NdefRecord.createTextRecord("en", "hello"),
+        )
+    }
+
+    @Before
+    fun skipReflectionWhenHiddenApiBlocksIt() {
+        assumeTrue(
+            "Tag.createMockTag is not visible on SDK ${Build.VERSION.SDK_INT}; " +
+                "skipping REFLECTION (set hidden_api_policy=1 while the emulator boots)",
+            strategy != TagStrategy.REFLECTION || TagFactory.isReflectionAvailable(),
         )
     }
 

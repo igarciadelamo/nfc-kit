@@ -1,0 +1,5 @@
+jdk:
+  - openjdk21
+
+install:
+  - ./gradlew :nfc-test-api:publishToMavenLocal :nfc-test:publishToMavenLocal

@@ -79,6 +79,16 @@ object TagFactory {
         return createInternal(uid, null, false, strategy)
     }
 
+    /**
+     * Whether [TagStrategy.REFLECTION] can see the hidden `Tag.createMockTag`
+     * factory on this device. Tests use it to skip instead of failing when the
+     * hidden API policy blocks the method.
+     */
+    internal fun isReflectionAvailable(): Boolean =
+        Tag::class.java.declaredMethods.any {
+            it.name == "createMockTag" && Modifier.isStatic(it.modifiers)
+        }
+
     private fun createInternal(
         uid: ByteArray,
         ndef: NdefMessage?,

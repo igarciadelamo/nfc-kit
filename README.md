@@ -43,6 +43,25 @@ Call `NfcReaders.get().enable(activity, callback)` from `onResume` and
 release builds use the real reader. The mock Tag supports discovery metadata but
 not `connect()`/`transceive()` because there is no `INfcTag`.
 
+## JitPack
+
+The libraries are published from git tags. Add JitPack to your repositories and
+depend on the modules you need:
+
+```kotlin
+repositories {
+    maven { url = uri("https://jitpack.io") }
+}
+
+dependencies {
+    implementation("com.github.igarciadelamo.nfc-test:nfc-test-api:v0.1.0")
+    debugImplementation("com.github.igarciadelamo.nfc-test:nfc-test:v0.1.0")
+}
+```
+
+`nfc-test` depends on `nfc-test-api`, so the explicit API dependency is only
+needed when you use the facade directly.
+
 ## Sending a tag
 
 ```bash
@@ -96,11 +115,40 @@ at most 16 KiB.
 ./gradlew :sample:allDevicesGroupAndroidTest
 ./gradlew :sample-e2e:allDevicesGroupAndroidTest
 ./gradlew :sample:verifyReleaseHasNoNfcTest
+./gradlew publishToMavenLocal
 ```
 
-`REFLECTION` needs `hidden_api_policy=1` while the emulator boots. Architecture
-and detailed results: `docs/ARCHITECTURE.md`, `docs/STEP2_RESULTS.md` and
+`REFLECTION` needs `hidden_api_policy=1` while the emulator boots. Without it,
+the REFLECTION cases are skipped instead of failing. Architecture and detailed
+results: `docs/ARCHITECTURE.md`, `docs/STEP2_RESULTS.md` and
 `docs/COLD_START_RESULTS.md`.
+
+### Running GMD serially
+
+`maxConcurrentDevices=1` in `gradle.properties` keeps Gradle Managed Devices
+from starting more than one emulator at a time. To run one module and one API
+per command, use the per-API task names:
+
+```bash
+./gradlew :nfc-test:api30DebugAndroidTest
+./gradlew :nfc-test:api34DebugAndroidTest
+./gradlew :nfc-test:api36DebugAndroidTest
+
+./gradlew :nfc-test-api:api30DebugAndroidTest
+./gradlew :nfc-test-api:api34DebugAndroidTest
+./gradlew :nfc-test-api:api36DebugAndroidTest
+
+./gradlew :sample:api30DebugAndroidTest
+./gradlew :sample:api34DebugAndroidTest
+./gradlew :sample:api36DebugAndroidTest
+
+./gradlew :sample-e2e:api30DebugAndroidTest
+./gradlew :sample-e2e:api34DebugAndroidTest
+./gradlew :sample-e2e:api36DebugAndroidTest
+```
+
+The `allDevicesGroupAndroidTest` aliases run the same tasks for one module
+across all three APIs.
 
 ## License
 
