@@ -18,6 +18,10 @@ It is a development and test tool. The injected tag carries discovery metadata
 `readNdefMessage()` and `writeNdefMessage()` still fail. Do not ship the debug
 module in release.
 
+<p align="center">
+  <img src="docs/demo.gif" alt="Cold-start demo" width="480">
+</p>
+
 ## Requirements
 
 - JDK 17 or newer.
