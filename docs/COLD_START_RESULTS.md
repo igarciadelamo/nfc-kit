@@ -75,7 +75,7 @@ test APK has no NFC filters and `resolve()` returns `null`.
 - Deliberate failure: adding `:nfc-test` to the release variant produces the
   expected **FAIL**. The task detects `NfcTestReceiver`, `NfcTestInitProvider`,
   `NfcTestLaunchActivity`, `nfctest-init` and `android.permission.DUMP` in the
-  merged manifests, and `Ldev/nfctest/TagFactory;`, `NfcTestReceiver;`,
+  merged manifests, and `Les/igarciadelamo/nfctest/TagFactory;`, `NfcTestReceiver;`,
   `NfcTestInitProvider;`, `InjectableNfcReader;`, `NfcTestLaunchActivity;` and
   `NfcIntentResolver;` in the dex. Reverted afterwards; the release APK is clean
   again.

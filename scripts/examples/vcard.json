@@ -2,7 +2,7 @@
   "uid": "01020304050607",
   "readOnly": false,
   "records": [
-    {"type": "uri", "value": "https://txoka.app"},
+    {"type": "uri", "value": "https://example.com"},
     {"type": "mime", "mime": "text/vcard", "valueBase64": "QkVHSU46VkNBUkQKVkVSU0lPTjozLjAKRk46QWRhCkVORDpWQ0FSRAo="},
     {"type": "external", "domain": "example.com", "typeName": "t", "valueBase64": "AAEC"}
   ]

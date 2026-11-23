@@ -86,7 +86,7 @@ if [ "$COLD" = "1" ]; then
     # forever for an activity that never becomes idle. The logcat line is the
     # result channel.
     OUTPUT=$("$ADB" shell am start \
-        -n "$PACKAGE/dev.nfctest.NfcTestLaunchActivity" \
+        -n "$PACKAGE/es.igarciadelamo.nfctest.NfcTestLaunchActivity" \
         --es tag_b64 "$B64" \
         --es id "$ID" 2>&1)
     echo "$OUTPUT"
@@ -119,7 +119,7 @@ if [ "$COLD" = "1" ]; then
 fi
 
 OUTPUT=$("$ADB" shell am broadcast \
-    -a dev.nfctest.TAP \
+    -a es.igarciadelamo.nfctest.TAP \
     -p "$PACKAGE" \
     -f 32 \
     --es tag_b64 "$B64" \

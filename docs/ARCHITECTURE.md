@@ -4,24 +4,24 @@
 
 ```
 nfc-test/
-├── nfc-test-api: Android library, dev.nfctest.api
+├── nfc-test-api: Android library, es.igarciadelamo.nfctest.api
 │   NfcReader, RealNfcReader, NfcReaders, TagCallback
 │   → implementation() in the app · shipped in RELEASE
 │
-├── nfc-test: Android library, dev.nfctest · DEBUG ONLY
+├── nfc-test: Android library, es.igarciadelamo.nfctest · DEBUG ONLY
 │   TagFactory (spike) · TagSpec/Parser · NfcTestReceiver
 │   NfcTestInitProvider · ResumedActivityTracker
 │   InjectableNfcReader · TagDispatcher · NfcIntentResolver
 │   NfcTestLaunchActivity (cold-start trampoline)
 │   → debugImplementation() in the app
 │
-├── sample: demo app, dev.nfctest.sample
+├── sample: demo app, es.igarciadelamo.nfctest.sample
 │   ReaderActivity · IntentActivity · ReceivedTags
-│   (does not reference dev.nfctest; only dev.nfctest.api)
+│   (does not reference es.igarciadelamo.nfctest; only es.igarciadelamo.nfctest.api)
 │
-└── sample-e2e: com.android.test, dev.nfctest.sample.e2e
+└── sample-e2e: com.android.test, es.igarciadelamo.nfctest.sample.e2e
     ColdStartTest (UiAutomator, separate process)
-    targetPackage = "dev.nfctest.sample"
+    targetPackage = "es.igarciadelamo.nfctest.sample"
 ```
 
 Dependencies: `:sample → :nfc-test-api` (implementation) and
@@ -32,7 +32,7 @@ uses UiAutomator.
 ## Flow
 
 ```
- adb shell am broadcast -a dev.nfctest.TAP -f 32 --es tag_b64 ... --es mode ...
+ adb shell am broadcast -a es.igarciadelamo.nfctest.TAP -f 32 --es tag_b64 ... --es mode ...
         │
         ▼
  NfcTestReceiver            (debug-only, android.permission.DUMP)
@@ -53,7 +53,7 @@ uses UiAutomator.
 ## Cold-start flow
 
 ```
- adb shell am start -n <pkg>/dev.nfctest.NfcTestLaunchActivity \
+ adb shell am start -n <pkg>/es.igarciadelamo.nfctest.NfcTestLaunchActivity \
      --es tag_b64 <b64> --es id <id>
         │
         ▼

@@ -5,12 +5,24 @@ Injects a fake NFC tag into an app running on an emulator without NFC.
 - `:nfc-test-api`: release-safe `NfcReader` facade, `RealNfcReader` and `NfcReaders`.
 - `:nfc-test`: debug-only receiver, init provider and tag factory.
 
+## Why
+
+Android emulators have no NFC radio. Testing tag discovery normally needs
+physical tags, a hardware device or a custom build. This project fabricates an
+`android.nfc.Tag` with an `NdefMessage`, injects it from `adb`, and lets the app
+receive it through the same reader-mode, foreground-dispatch or cold-start paths
+it uses in production.
+
+It is a development and test tool. The injected tag carries discovery metadata
+(`id`, `techList`, `cachedNdefMessage`) but has no `INfcTag`, so `connect()`,
+`readNdefMessage()` and `writeNdefMessage()` still fail. Do not ship the debug
+module in release.
+
 ## Requirements
 
-- JDK 17 or newer. AGP 9.5.1 targets Java 17 bytecode (class file 61), so the
-  minimum is JDK 17; Gradle runs on Temurin 21.0.13 in this environment. Steps 1
-  and 2 were verified with JDK 17; cold start was verified with 21.0.13.
-- Android SDK with `compileSdk` 37 and AOSP API 30/34/36 images for GMD.
+- JDK 17 or newer.
+- Android SDK with `compileSdk` 37 and AOSP API 30/34/36 images for Gradle
+  Managed Devices.
 
 ## Integration
 
@@ -21,17 +33,17 @@ dependencies {
 }
 ```
 
-Call `NfcReaders.enable(activity, callback)` from `onResume` and
-`NfcReaders.disable(activity)` from `onPause`. In debug builds a `ContentProvider`
-installs an injectable reader before `Application.onCreate`; release builds use
-the real reader. The mock Tag supports discovery metadata but not
-`connect()`/`transceive()` because there is no `INfcTag`.
+Call `NfcReaders.get().enable(activity, callback)` from `onResume` and
+`NfcReaders.get().disable(activity)` from `onPause`. In debug builds a
+`ContentProvider` installs an injectable reader before `Application.onCreate`;
+release builds use the real reader. The mock Tag supports discovery metadata but
+not `connect()`/`transceive()` because there is no `INfcTag`.
 
 ## Sending a tag
 
 ```bash
 scripts/nfc-tap.sh <package> scripts/examples/uri-text.json foreground
-adb shell am broadcast -a dev.nfctest.TAP -p <pkg> -f 32 --es tag_b64 <b64> --es mode auto
+adb shell am broadcast -a es.igarciadelamo.nfctest.TAP -p <pkg> -f 32 --es tag_b64 <b64> --es mode auto
 ```
 
 Modes: `auto` (default), `reader`, `foreground`, `implicit`. `foreground` and
@@ -62,7 +74,7 @@ release builds.
 
 ```json
 {"uid":"01020304","readOnly":false,"records":[
-  {"type":"uri","value":"https://txoka.app"},
+  {"type":"uri","value":"https://example.com"},
   {"type":"text","lang":"en","value":"hello"},
   {"type":"mime","mime":"text/vcard","valueBase64":"..."},
   {"type":"external","domain":"example.com","typeName":"t","valueBase64":"..."}]}
@@ -85,3 +97,7 @@ at most 16 KiB.
 `REFLECTION` needs `hidden_api_policy=1` while the emulator boots. Architecture
 and detailed results: `docs/ARCHITECTURE.md`, `docs/STEP2_RESULTS.md` and
 `docs/COLD_START_RESULTS.md`.
+
+## License
+
+Apache License 2.0. See [LICENSE](LICENSE) and [NOTICE](NOTICE).

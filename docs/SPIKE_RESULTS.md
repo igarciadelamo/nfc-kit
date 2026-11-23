@@ -84,7 +84,7 @@ correct; what does not exist is the IPC channel to the NFC service for I/O and
 transceive. A future wrapper would have to intercept those calls, not just
 build the Tag.
 
-Files on the device: `/data/user/0/dev.nfctest.test/files/limits-30.json`,
+Files on the device: `/data/user/0/es.igarciadelamo.nfctest.test/files/limits-30.json`,
 `limits-34.json`, `limits-36.json` (GMD emulators are destroyed on completion;
 the full content remains in logcat and in the result XML files).
 

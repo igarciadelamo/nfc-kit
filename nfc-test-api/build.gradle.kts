@@ -3,7 +3,7 @@ plugins {
 }
 
 android {
-    namespace = "dev.nfctest.api"
+    namespace = "es.igarciadelamo.nfctest.api"
     compileSdk = 37
 
     defaultConfig {

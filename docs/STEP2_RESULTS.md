@@ -35,13 +35,13 @@ emulator booted, as in step 1 (the `REFLECTION` tests cannot see
 ## 2. API × path × scenario table
 
 Every scenario uses the same command a person would use:
-`adb shell am broadcast -a dev.nfctest.TAP -p dev.nfctest.sample -f 32 ...` from
+`adb shell am broadcast -a es.igarciadelamo.nfctest.TAP -p es.igarciadelamo.nfctest.sample -f 32 ...` from
 `UiAutomation.executeShellCommand` (shell identity, so the `DUMP` permission is
 also exercised).
 
 | Scenario | Path | API 30 | API 34 | API 36 |
 | --- | --- | --- | --- | --- |
-| 2-record tag reaches `onNewIntent` with `ACTION_NDEF_DISCOVERED`, usable `EXTRA_TAG` (2 records), `EXTRA_ID` and `data=https://txoka.app` | foreground | OK | OK | OK |
+| 2-record tag reaches `onNewIntent` with `ACTION_NDEF_DISCOVERED`, usable `EXTRA_TAG` (2 records), `EXTRA_ID` and `data=https://example.com` | foreground | OK | OK | OK |
 | 2-record tag reaches the callback | reader | OK | OK | OK |
 | The callback runs on a non-main thread (`NfcTest-binder`) | reader | OK | OK | OK |
 | First record is a URI: matches the `NDEF_DISCOVERED` filter and opens `IntentActivity` | implicit | OK | OK | OK |
@@ -65,7 +65,7 @@ NfcTest : request mode=implicit -> result=1 data="dispatched via implicit NDEF_D
 NfcTest : request mode=implicit -> result=1 data="dispatched via implicit TAG_DISCOVERED"
 NfcTest : request mode=implicit -> result=3 data="app in background: implicit needs a foreground activity"
 NfcTest : request mode=foreground -> result=3 data="no foreground activity"
-NfcSample : created=1 live=1 path=onNewIntent action=android.nfc.action.NDEF_DISCOVERED data=https://txoka.app uid=01020304 records=[uri: https://txoka.app, text: hello]
+NfcSample : created=1 live=1 path=onNewIntent action=android.nfc.action.NDEF_DISCOVERED data=https://example.com uid=01020304 records=[uri: https://example.com, text: hello]
 ```
 
 ## 3. `DUMP` permission
@@ -94,9 +94,9 @@ The task builds `:sample:assembleRelease` and checks:
 
 - merged release manifests: no `NfcTestReceiver`, `NfcTestInitProvider`,
   `nfctest-init` or `android.permission.DUMP`;
-- APK `classes*.dex`: no `Ldev/nfctest/TagFactory;`,
-  `Ldev/nfctest/NfcTestReceiver;`, `Ldev/nfctest/NfcTestInitProvider;` or
-  `Ldev/nfctest/InjectableNfcReader;`.
+- APK `classes*.dex`: no `Les/igarciadelamo/nfctest/TagFactory;`,
+  `Les/igarciadelamo/nfctest/NfcTestReceiver;`, `Les/igarciadelamo/nfctest/NfcTestInitProvider;` or
+  `Les/igarciadelamo/nfctest/InjectableNfcReader;`.
 
 Result: **OK** (clean release). It is wired into `check`.
 

@@ -3,11 +3,11 @@ plugins {
 }
 
 android {
-    namespace = "dev.nfctest.sample"
+    namespace = "es.igarciadelamo.nfctest.sample"
     compileSdk = 37
 
     defaultConfig {
-        applicationId = "dev.nfctest.sample"
+        applicationId = "es.igarciadelamo.nfctest.sample"
         minSdk = 30
         targetSdk = 37
         versionCode = 1
@@ -51,13 +51,13 @@ val verifyReleaseHasNoNfcTest = tasks.register("verifyReleaseHasNoNfcTest") {
 
     doLast {
         val forbiddenClasses = listOf(
-            "Ldev/nfctest/TagFactory;",
-            "Ldev/nfctest/NfcTestReceiver;",
-            "Ldev/nfctest/NfcTestInitProvider;",
-            "Ldev/nfctest/InjectableNfcReader;",
-            "Ldev/nfctest/NfcTestLaunchActivity;",
-            "Ldev/nfctest/NfcIntentResolver;",
-            "Ldev/nfctest/sample/e2e/",
+            "Les/igarciadelamo/nfctest/TagFactory;",
+            "Les/igarciadelamo/nfctest/NfcTestReceiver;",
+            "Les/igarciadelamo/nfctest/NfcTestInitProvider;",
+            "Les/igarciadelamo/nfctest/InjectableNfcReader;",
+            "Les/igarciadelamo/nfctest/NfcTestLaunchActivity;",
+            "Les/igarciadelamo/nfctest/NfcIntentResolver;",
+            "Les/igarciadelamo/nfctest/sample/e2e/",
         )
         val forbiddenManifest = listOf(
             "NfcTestReceiver",

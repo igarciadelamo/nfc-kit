@@ -29,7 +29,7 @@
                 <action android:name="android.nfc.action.NDEF_DISCOVERED" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <data
-                    android:host="txoka.app"
+                    android:host="example.com"
                     android:scheme="https" />
             </intent-filter>
             <intent-filter>
