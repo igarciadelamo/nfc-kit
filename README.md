@@ -29,6 +29,10 @@ No test-only branches in your app.
 - **Debug-only** — the injection module never ships in release builds.
 - **Verified** — instrumented tests run on API 30, 34 and 36 managed devices.
 
+> **Scope:** `nfc-test` is compiled into the app under test as a debug-only
+> dependency. It cannot inject tags into a third-party APK or a release build,
+> and the only production change is reading tags through `NfcReaders`.
+>
 > **Note:** this is a development and test tool. The injected tag carries
 > discovery metadata (`id`, `techList`, `cachedNdefMessage`) but has no
 > `INfcTag`, so `connect()`, `readNdefMessage()` and `writeNdefMessage()` still
