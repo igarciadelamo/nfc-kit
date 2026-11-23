@@ -5,6 +5,13 @@ Injects a fake NFC tag into an app running on an emulator without NFC.
 - `:nfc-test-api` — `NfcReader` / `NfcReaders`. Ships in **release**.
 - `:nfc-test` — receiver, provider and tag factory. **Debug only**.
 
+## Requirements
+
+- JDK 17 or newer. AGP 9.5.1 is compiled for Java 17 (class file 61);
+  Gradle 9.9.2 uses Temurin 21.0.13 in this environment. The build compiles with
+  `sourceCompatibility`/`targetCompatibility` 17.
+- Android SDK with `compileSdk` 37 and the AOSP images for API 30/34/36 for GMD.
+
 ## Integration
 
 ```kotlin
