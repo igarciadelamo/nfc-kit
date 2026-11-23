@@ -17,6 +17,20 @@
             </intent-filter>
         </receiver>
 
+        <!--
+            Debug-only cold-start trampoline. The adb shell starts it and it
+            launches the destination Activity with the NFC Intent already set.
+            DUMP keeps it reachable only from the shell and DUMP holders.
+        -->
+        <activity
+            android:name="dev.nfctest.NfcTestLaunchActivity"
+            android:exported="true"
+            android:permission="android.permission.DUMP"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar"
+            android:excludeFromRecents="true"
+            android:noHistory="true"
+            android:taskAffinity="" />
+
         <!-- Installs the activity tracker and the injectable reader at startup. -->
         <provider
             android:name="dev.nfctest.NfcTestInitProvider"
