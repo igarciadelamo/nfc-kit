@@ -31,6 +31,19 @@ Modes: `auto` (default), `reader`, `foreground`, `implicit`. `foreground` and
 Results: `1` delivered, `2` invalid tag, `3` no destination, `4` reader not active,
 `5` unexpected error.
 
+## Cold start
+
+`scripts/nfc-tap.sh --cold <package> <json|-> [--keep-process]` simulates a tag with
+the app closed or in the background. The trampoline opens the destination Activity
+with `FLAG_ACTIVITY_NEW_TASK`. It polls logcat and exits with
+`0` only if `result=1`.
+
+```bash
+scripts/nfc-tap.sh --cold dev.nfctest.sample scripts/examples/uri-text.json
+```
+
+The result is written to logcat as `cold id=<id> result=<code> data="..."`.
+
 ## JSON
 
 ```json
@@ -55,6 +68,7 @@ UID in hex of 4, 7 or 10 bytes; at least one record; message ≤ 16 KiB.
 ./gradlew testDebugUnitTest
 ./gradlew :nfc-test:allDevicesGroupAndroidTest
 ./gradlew :sample:allDevicesGroupAndroidTest
+./gradlew :sample-e2e:allDevicesGroupAndroidTest
 ./gradlew :sample:verifyReleaseHasNoNfcTest
 ```
 
