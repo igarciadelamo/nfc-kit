@@ -59,8 +59,8 @@ dependencies {
 }
 ```
 
-`nfc-test` depends on `nfc-test-api`, so the explicit API dependency is only
-needed when you use the facade directly.
+`nfc-test` is debug-only and brings `nfc-test-api` transitively in debug builds.
+Keep the explicit `nfc-test-api` dependency for release builds.
 
 ## Sending a tag
 
