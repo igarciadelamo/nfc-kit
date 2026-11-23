@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.widget.TextView
+import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * Receives tags delivered as Intents (foreground, implicit and cold-start).
@@ -19,12 +20,19 @@ class IntentActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        createdInstances.incrementAndGet()
+        liveInstances.incrementAndGet()
         content = TextView(this).apply {
             id = R.id.received_info
             setPadding(32, 32, 32, 32)
         }
         setContentView(content)
         handleIntent(intent, "onCreate")
+    }
+
+    override fun onDestroy() {
+        liveInstances.decrementAndGet()
+        super.onDestroy()
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -47,7 +55,8 @@ class IntentActivity : Activity() {
         )
         Log.i(
             TAG,
-            "path=$path action=${delivery.action} data=${delivery.data} type=${delivery.type} " +
+            "created=${createdInstances.get()} live=${liveInstances.get()} path=$path " +
+                "action=${delivery.action} data=${delivery.data} type=${delivery.type} " +
                 "uid=${delivery.uid} records=${delivery.records.size}",
         )
         content.text = "path=$path action=${delivery.action} " +
@@ -58,5 +67,7 @@ class IntentActivity : Activity() {
         const val TAG = "NfcSample"
         const val SOURCE = "intent"
         const val NFC_ACTION_PREFIX = "android.nfc.action."
+        val createdInstances = AtomicInteger(0)
+        val liveInstances = AtomicInteger(0)
     }
 }

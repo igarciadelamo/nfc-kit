@@ -120,6 +120,35 @@ class ColdStartTest {
     }
 
     @Test
+    fun backgroundIntentActivityOnTopKeepsSingleInstance() {
+        shell("am force-stop $packageName")
+        shell("am start -n $packageName/.IntentActivity")
+        device.wait(Until.hasObject(By.res(packageName, "received_info")), TIMEOUT_MS)
+        device.pressHome()
+        device.waitForIdle()
+
+        val launch = launchCold(URI_TEXT, keepProcess = true)
+        val info = awaitInfo()
+        // The path is not fixed a priori: record the observed one in the results.
+        Log.i(TAG, "observed path=$info")
+        assertTrue("records=2 expected, got: $info", info.contains("records=2"))
+        assertTrue("uid=01020304 expected, got: $info", info.contains("uid=01020304"))
+        assertEquals(1, resultOf(awaitLog(launch.id)))
+
+        val (created, live) = awaitInstanceCounts()
+        assertEquals(
+            "IntentActivity must be created once (created=$created live=$live)",
+            1,
+            created,
+        )
+        assertEquals(
+            "IntentActivity must keep a single live instance (created=$created live=$live)",
+            1,
+            live,
+        )
+    }
+
+    @Test
     fun invalidUidReturnsResult2AndOpensNothing() {
         val launch = launchCold(INVALID_UID)
 
@@ -201,6 +230,24 @@ class ColdStartTest {
             line.trim().split(Regex("\\s+")).getOrNull(1) == pid
         }
 
+    private data class InstanceCounts(val created: Int, val live: Int)
+
+    private fun awaitInstanceCounts(): InstanceCounts {
+        val deadline = System.currentTimeMillis() + TIMEOUT_MS
+        while (System.currentTimeMillis() < deadline) {
+            val line = shell("logcat -d -s NfcSample")
+                .lineSequence()
+                .lastOrNull { it.contains("created=") && it.contains("live=") }
+            if (line != null) {
+                val created = CREATED.find(line)?.groupValues?.get(1)?.toInt()
+                val live = LIVE.find(line)?.groupValues?.get(1)?.toInt()
+                if (created != null && live != null) return InstanceCounts(created, live)
+            }
+            Thread.sleep(POLL_MS)
+        }
+        throw AssertionError("No NfcSample created=/live= line found")
+    }
+
     private fun awaitInfo(): String {
         val found = device.wait(
             Until.hasObject(By.res(packageName, "received_info").textContains("path=")),
@@ -235,6 +282,8 @@ class ColdStartTest {
         const val TIMEOUT_MS = 5_000L
         const val POLL_MS = 200L
         val RESULT = Regex("""result=(-?\d+)""")
+        val CREATED = Regex("""created=(\d+)""")
+        val LIVE = Regex("""live=(\d+)""")
 
         const val URI_TEXT =
             """{"uid":"01020304","readOnly":false,"records":[{"type":"uri","value":"https://txoka.app"},{"type":"text","lang":"es","value":"hola"}]}"""
