@@ -54,8 +54,8 @@ repositories {
 }
 
 dependencies {
-    implementation("com.github.igarciadelamo.nfc-test:nfc-test-api:v0.1.0")
-    debugImplementation("com.github.igarciadelamo.nfc-test:nfc-test:v0.1.0")
+    implementation("com.github.igarciadelamo.nfc-test:nfc-test-api:0.1.0")
+    debugImplementation("com.github.igarciadelamo.nfc-test:nfc-test:0.1.0")
 }
 ```
 
