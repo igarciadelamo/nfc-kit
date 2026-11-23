@@ -83,7 +83,7 @@ class NfcTapEndToEndTest {
         assertEquals(NfcAdapter.ACTION_NDEF_DISCOVERED, delivery.action)
         assertEquals("https://txoka.app", delivery.data)
         assertEquals("01020304", delivery.uid)
-        assertEquals(listOf("uri: https://txoka.app", "text: hola"), delivery.records)
+        assertEquals(listOf("uri: https://txoka.app", "text: hello"), delivery.records)
     }
 
     // 2. reader ---------------------------------------------------------------
@@ -98,7 +98,7 @@ class NfcTapEndToEndTest {
         val delivery = await { it.source == "reader" }
         assertNotEquals("The injected callback must not run on the main thread", "main", delivery.thread)
         assertEquals("01020304", delivery.uid)
-        assertEquals(listOf("uri: https://txoka.app", "text: hola"), delivery.records)
+        assertEquals(listOf("uri: https://txoka.app", "text: hello"), delivery.records)
 
         // Reader mode must not also dispatch an Intent for the same tag.
         Thread.sleep(300)
@@ -127,7 +127,7 @@ class NfcTapEndToEndTest {
         assertEquals(NfcAdapter.ACTION_NDEF_DISCOVERED, delivery.action)
         assertEquals("https://txoka.app", delivery.data)
         assertEquals("01020304", delivery.uid)
-        assertEquals(listOf("uri: https://txoka.app", "text: hola"), delivery.records)
+        assertEquals(listOf("uri: https://txoka.app", "text: hello"), delivery.records)
     }
 
     @Test
@@ -155,7 +155,7 @@ class NfcTapEndToEndTest {
         assertEquals(result.output, 1, result.code)
         val delivery = await { it.source == "intent" }
         assertEquals(NfcAdapter.ACTION_TAG_DISCOVERED, delivery.action)
-        assertEquals(listOf("text: hola"), delivery.records)
+        assertEquals(listOf("text: hello"), delivery.records)
     }
 
     // 5. auto -----------------------------------------------------------------
@@ -267,10 +267,10 @@ class NfcTapEndToEndTest {
         val DATA = Regex("""data="([^"]*)"""")
 
         const val URI_TEXT =
-            """{"uid":"01020304","readOnly":false,"records":[{"type":"uri","value":"https://txoka.app"},{"type":"text","lang":"es","value":"hola"}]}"""
+            """{"uid":"01020304","readOnly":false,"records":[{"type":"uri","value":"https://txoka.app"},{"type":"text","lang":"en","value":"hello"}]}"""
 
         const val TEXT_ONLY =
-            """{"uid":"01020304","records":[{"type":"text","lang":"es","value":"hola"}]}"""
+            """{"uid":"01020304","records":[{"type":"text","lang":"en","value":"hello"}]}"""
 
         const val MULTI =
             """{"uid":"01020304050607","records":[{"type":"uri","value":"https://txoka.app"},{"type":"mime","mime":"text/vcard","valueBase64":"QkVHSU46VkNBUkQ="},{"type":"external","domain":"example.com","typeName":"t","valueBase64":"AAEC"}]}"""

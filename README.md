@@ -2,15 +2,15 @@
 
 Injects a fake NFC tag into an app running on an emulator without NFC.
 
-- `:nfc-test-api` — `NfcReader` / `NfcReaders`. Ships in **release**.
-- `:nfc-test` — receiver, provider and tag factory. **Debug only**.
+- `:nfc-test-api`: release-safe `NfcReader` facade, `RealNfcReader` and `NfcReaders`.
+- `:nfc-test`: debug-only receiver, init provider and tag factory.
 
 ## Requirements
 
-- JDK 17 or newer. AGP 9.5.1 is compiled for Java 17 (class file 61);
-  Gradle 9.9.2 uses Temurin 21.0.13 in this environment. The build compiles with
-  `sourceCompatibility`/`targetCompatibility` 17.
-- Android SDK with `compileSdk` 37 and the AOSP images for API 30/34/36 for GMD.
+- JDK 17 or newer. AGP 9.5.1 targets Java 17 bytecode (class file 61), so the
+  minimum is JDK 17; Gradle runs on Temurin 21.0.13 in this environment. Steps 1
+  and 2 were verified with JDK 17; cold start was verified with 21.0.13.
+- Android SDK with `compileSdk` 37 and AOSP API 30/34/36 images for GMD.
 
 ## Integration
 
@@ -21,10 +21,11 @@ dependencies {
 }
 ```
 
-Usage: `NfcReaders.get().enable(this, TagCallback { tag -> ... })` in `onResume` and
-`NfcReaders.get().disable(this)` in `onPause`. In debug a `ContentProvider`
-replaces the factory when the process starts and the same callback receives both
-real and injected tags. In release, `RealNfcReader` remains.
+Call `NfcReaders.enable(activity, callback)` from `onResume` and
+`NfcReaders.disable(activity)` from `onPause`. In debug builds a `ContentProvider`
+installs an injectable reader before `Application.onCreate`; release builds use
+the real reader. The mock Tag supports discovery metadata but not
+`connect()`/`transceive()` because there is no `INfcTag`.
 
 ## Sending a tag
 
@@ -34,45 +35,43 @@ adb shell am broadcast -a dev.nfctest.TAP -p <pkg> -f 32 --es tag_b64 <b64> --es
 ```
 
 Modes: `auto` (default), `reader`, `foreground`, `implicit`. `foreground` and
-`implicit` require the app in the foreground; without an Activity they return `3`.
-Results: `1` delivered, `2` invalid tag, `3` no destination, `4` reader not active,
-`5` unexpected error.
+`implicit` require a foreground activity; without one they return `result=3`.
+Result codes: `1` delivered/launched, `2` invalid tag, `3` no destination,
+`4` no reader, `5` unexpected error.
 
 ## Cold start
 
-`scripts/nfc-tap.sh --cold <package> <json|-> [--keep-process]` simulates a tag with
-the app closed or in the background. The trampoline opens the destination Activity
-with `FLAG_ACTIVITY_NEW_TASK`. It polls logcat and exits with
-`0` only if `result=1`.
+`scripts/nfc-tap.sh --cold <package> <json-file|-> [--keep-process]` starts
+`NfcTestLaunchActivity` from the shell after `force-stop`, waits for the
+`cold id=... result=...` logcat line, and exits non-zero unless the result is 1.
+It honors `ANDROID_SERIAL`. The activity is debug-only and guarded by
+`android.permission.DUMP`.
 
 ```bash
-scripts/nfc-tap.sh --cold dev.nfctest.sample scripts/examples/uri-text.json
+scripts/nfc-tap.sh --cold <package> scripts/examples/uri-text.json
 ```
 
-The result is written to logcat as `cold id=<id> result=<code> data="..."`.
-The script prints `pid before=<pid> after=<pid>`.
+The result is written to logcat as `cold id=<id> result=<code> data=<...>`.
+The script also prints `pid before=... after=...`.
 
-The debug extra `--ez no_destination true` forces the "no destination" branch of the
-trampoline. `verifyReleaseHasNoNfcTest` keeps it out of the release build.
+The debug extra `--ez no_destination true` forces the "no destination" branch
+for testing. It is debug-only and `verifyReleaseHasNoNfcTest` rejects it in
+release builds.
 
 ## JSON
 
 ```json
-{
-  "uid": "01020304",
-  "readOnly": false,
-  "records": [
-    {"type": "uri", "value": "https://txoka.app"},
-    {"type": "text", "lang": "en", "value": "hello"},
-    {"type": "mime", "mime": "text/vcard", "valueBase64": "..."},
-    {"type": "external", "domain": "example.com", "typeName": "t", "valueBase64": "..."}
-  ]
-}
+{"uid":"01020304","readOnly":false,"records":[
+  {"type":"uri","value":"https://txoka.app"},
+  {"type":"text","lang":"en","value":"hello"},
+  {"type":"mime","mime":"text/vcard","valueBase64":"..."},
+  {"type":"external","domain":"example.com","typeName":"t","valueBase64":"..."}]}
 ```
 
-UID in hex of 4, 7 or 10 bytes; at least one record; message ≤ 16 KiB.
+UID is 4, 7 or 10 bytes in hex. At least one record is required. Message size is
+at most 16 KiB.
 
-## Commands
+## Verification
 
 ```bash
 ./gradlew assembleDebug assembleDebugAndroidTest assembleRelease
@@ -83,5 +82,6 @@ UID in hex of 4, 7 or 10 bytes; at least one record; message ≤ 16 KiB.
 ./gradlew :sample:verifyReleaseHasNoNfcTest
 ```
 
-`REFLECTION` needs `hidden_api_policy 1` while the emulator boots
-(see `docs/STEP2_RESULTS.md`). Architecture: `docs/ARCHITECTURE.md`.
+`REFLECTION` needs `hidden_api_policy=1` while the emulator boots. Architecture
+and detailed results: `docs/ARCHITECTURE.md`, `docs/STEP2_RESULTS.md` and
+`docs/COLD_START_RESULTS.md`.

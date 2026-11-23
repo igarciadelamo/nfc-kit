@@ -33,7 +33,7 @@ class TagFactoryTest(private val strategy: TagStrategy) {
 
         private fun twoRecordMessage(): NdefMessage = NdefMessage(
             NdefRecord.createUri("https://txoka.app"),
-            NdefRecord.createTextRecord("es", "hola"),
+            NdefRecord.createTextRecord("en", "hello"),
         )
     }
 
@@ -197,7 +197,7 @@ class TagFactoryTest(private val strategy: TagStrategy) {
 
     @Test
     fun largeMessageFitsInNdefMaxSize() {
-        val message = NdefMessage(NdefRecord.createTextRecord("es", "x".repeat(2048)))
+        val message = NdefMessage(NdefRecord.createTextRecord("en", "x".repeat(2048)))
         val tag = TagFactory.create(UID_4, message, strategy = strategy)
         val ndef = Ndef.get(tag)!!
 

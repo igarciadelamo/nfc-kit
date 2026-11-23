@@ -8,7 +8,7 @@ import org.junit.runner.RunWith
 
 /**
  * Resolves the cascade against the test APK's own package, which has no NFC
- * intent filters. The trampoline maps this null result to the "sin destino"
+ * intent filters. The trampoline maps this null result to the "no destination"
  * path (result 3), so the case does not depend only on the debug flag.
  */
 @RunWith(AndroidJUnit4::class)

@@ -4,23 +4,30 @@
 
 ```
 nfc-test/
-├── nfc-test-api/   Android library · dev.nfctest.api
+├── nfc-test-api: Android library, dev.nfctest.api
 │   NfcReader, RealNfcReader, NfcReaders, TagCallback
-│   → implementation() in the app · ships in RELEASE
+│   → implementation() in the app · shipped in RELEASE
 │
-├── nfc-test/       Android library · dev.nfctest · DEBUG ONLY
+├── nfc-test: Android library, dev.nfctest · DEBUG ONLY
 │   TagFactory (spike) · TagSpec/Parser · NfcTestReceiver
 │   NfcTestInitProvider · ResumedActivityTracker
-│   InjectableNfcReader · TagDispatcher
+│   InjectableNfcReader · TagDispatcher · NfcIntentResolver
+│   NfcTestLaunchActivity (cold-start trampoline)
 │   → debugImplementation() in the app
 │
-└── sample/         sample app · dev.nfctest.sample
-    ReaderActivity · IntentActivity · ReceivedTags
-    (does not reference dev.nfctest: only uses dev.nfctest.api)
+├── sample: demo app, dev.nfctest.sample
+│   ReaderActivity · IntentActivity · ReceivedTags
+│   (does not reference dev.nfctest; only dev.nfctest.api)
+│
+└── sample-e2e: com.android.test, dev.nfctest.sample.e2e
+    ColdStartTest (UiAutomator, separate process)
+    targetPackage = "dev.nfctest.sample"
 ```
 
-Dependencies: `:sample → :nfc-test-api` (implementation) and `:sample → :nfc-test`
-(debugImplementation); `:nfc-test → :nfc-test-api` (api).
+Dependencies: `:sample → :nfc-test-api` (implementation) and
+`:sample → :nfc-test` (debugImplementation); `:nfc-test → :nfc-test-api`
+(`api`). `:sample-e2e` does not depend on `:nfc-test`; it targets `:sample` and
+uses UiAutomator.
 
 ## Flow
 
@@ -28,67 +35,74 @@ Dependencies: `:sample → :nfc-test-api` (implementation) and `:sample → :nfc
  adb shell am broadcast -a dev.nfctest.TAP -f 32 --es tag_b64 ... --es mode ...
         │
         ▼
- NfcTestReceiver            (in the app process, DUMP permission)
-        │  TagSpecParser.parse(json)          -> TagSpec or TagSpecException (result 2)
+ NfcTestReceiver            (debug-only, android.permission.DUMP)
+        │
         ▼
  TagDispatcher.dispatch(spec, mode)
-        │  spec.toTag()  ->  TagFactory (PARCEL, AUTO)   [Tag Parcelable in process]
         │
-        ├── reader      -> InjectableNfcReader.deliver(tag)
-        │                     └─ executor "NfcTest-binder" -> TagCallback
-        ├── foreground  -> activity.startActivity(intent + SINGLE_TOP)
-        │                     └─ IntentActivity.onNewIntent
-        ├── implicit    -> queryIntentActivities(NDEF → TECH → TAG)
-        │                     └─ startActivity (same Activity in the foreground)
-        └── auto        -> reader if active, else foreground, else implicit
+        ├── reader: InjectableNfcReader.deliver(tag)
+        ├── foreground: startActivity(Intent)
+        ├── implicit: startActivity(Intent)
+        └── auto: reader if enabled, else foreground if an activity is resumed,
+                  else implicit
         │
         ▼
- setResult(code, message, null)  ->  am broadcast prints result=/data=
+ Result code and data are returned through the broadcast.
 ```
 
 ## Cold-start flow
 
 ```
  adb shell am start -n <pkg>/dev.nfctest.NfcTestLaunchActivity \
-     --es tag_b64 ... --es id ...
+     --es tag_b64 <b64> --es id <id>
         │
         ▼
- NfcTestLaunchActivity      (debug, DUMP, translucent, noHistory)
-        │  TagSpecParser.parse(json)  -> TagSpec or TagSpecException (result 2)
-        │  spec.toTag()               -> TagFactory (PARCEL, AUTO)
+ NfcTestLaunchActivity (debug-only, DUMP, translucent, noHistory)
+        │
+        ├── TagSpecParser.parse(json)
+        ├── TagFactory (PARCEL or REFLECTION)
+        ├── NfcIntentResolver.resolve(spec, tag)
+        ├── startActivity(Intent + FLAG_ACTIVITY_NEW_TASK)
+        └── finish() without animation
+        │
         ▼
- NfcIntentResolver.resolve(spec, tag)      (NDEF → TECH → TAG)
-        │  no destination -> result 3
-        ▼
- startActivity(intent + NEW_TASK)  ->  destination Activity (onCreate)
-        │  immediate finish(), no animation
+ Destination activity (onCreate)
+        │
         ▼
  logcat: cold id=<id> result=<code> data="..."
 ```
 
-The trampoline is a visible Activity, so its `startActivity` does not hit the
-background-activity-launch restriction. The destination receives the `Intent` with
-`EXTRA_TAG`, `EXTRA_ID` and `EXTRA_NDEF_MESSAGES` as if the system had launched it.
+The trampoline is a real activity, so launching it from the shell does not hit
+the Android background-activity restriction. It builds the tag, resolves the
+NDEF → TECH → TAG cascade and forwards the intent. The destination sees the
+normal NFC extras and `path=onCreate` or `path=onNewIntent`. The script waits
+for the `cold id=... result=...` logcat line and uses `am start` without `-W`
+because `-W` waits for an activity that may never open when the destination is
+missing.
 
-## Why the receiver lives inside the app
+## Why the receiver runs in the app process
 
-`android.nfc.Tag` is `Parcelable` but it is built from a `Parcel` with hidden
-fields. Injecting it from another process would require marshalling that state.
+`android.nfc.Tag` is `Parcelable`, but its hidden fields are populated by the
+platform. A separate helper process cannot create a tag that the app can use
+for discovery metadata without sharing the same process. The debug provider
+installs the injectable reader before `Application.onCreate`, and the receiver
+delivers the tag through the same process. The production reader remains the
+real platform reader in release builds.
 
-## Cold start without touching the app code
+## Start without touching app code
 
 `NfcTestInitProvider` (`initOrder=1000`, `exported=false`) runs before any
 component:
 
-1. Registra `ResumedActivityTracker` (`ActivityLifecycleCallbacks`).
-2. Crea `InjectableNfcReader` y lo instala en `NfcReaders.factory`.
+1. Registers `ResumedActivityTracker` (`ActivityLifecycleCallbacks`).
+2. Creates `InjectableNfcReader` and installs it in `NfcReaders.factory`.
 
 In release the provider does not exist (the module is absent), so
 `NfcReaders.get()` returns `RealNfcReader`.
 
 ## Delivery and lifecycle
 
-- A single active callback: the one from the last Activity that called `enable`.
-- `disable()` (the app's `onPause`) clears it; `onActivityDestroyed` also clears it.
-- `deliver()` checks `activity.isDestroyed` before enqueuing.
+- Only one callback is active: the last activity that called `enable`.
+- `disable()` (app `onPause`) clears it; `onActivityDestroyed` also clears it.
+- `deliver()` checks `activity.isDestroyed` before enqueueing.
 - The injected callback runs on `NfcTest-binder`, never on the main thread.

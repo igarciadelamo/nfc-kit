@@ -3,6 +3,6 @@
   "readOnly": false,
   "records": [
     {"type": "uri", "value": "https://txoka.app"},
-    {"type": "text", "lang": "es", "value": "hola"}
+    {"type": "text", "lang": "en", "value": "hello"}
   ]
 }

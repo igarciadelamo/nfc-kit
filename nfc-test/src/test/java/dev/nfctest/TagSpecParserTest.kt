@@ -13,7 +13,7 @@ class TagSpecParserTest {
           "readOnly": false,
           "records": [
             {"type": "uri", "value": "https://txoka.app"},
-            {"type": "text", "lang": "es", "value": "hola"}
+            {"type": "text", "lang": "en", "value": "hello"}
           ]
         }
     """.trimIndent()
@@ -26,7 +26,7 @@ class TagSpecParserTest {
         assertEquals(false, spec.readOnly)
         assertEquals(2, spec.records.size)
         assertEquals(TagRecord.Uri("https://txoka.app"), spec.records[0])
-        assertEquals(TagRecord.Text("es", "hola"), spec.records[1])
+        assertEquals(TagRecord.Text("en", "hello"), spec.records[1])
     }
 
     @Test

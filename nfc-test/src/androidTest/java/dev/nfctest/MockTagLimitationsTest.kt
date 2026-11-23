@@ -33,7 +33,7 @@ class MockTagLimitationsTest {
         try {
             val message = NdefMessage(
                 NdefRecord.createUri("https://txoka.app"),
-                NdefRecord.createTextRecord("es", "hola"),
+                NdefRecord.createTextRecord("en", "hello"),
             )
             val tag = TagFactory.create(
                 byteArrayOf(0x01, 0x02, 0x03, 0x04),

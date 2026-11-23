@@ -286,12 +286,12 @@ class ColdStartTest {
         val LIVE = Regex("""live=(\d+)""")
 
         const val URI_TEXT =
-            """{"uid":"01020304","readOnly":false,"records":[{"type":"uri","value":"https://txoka.app"},{"type":"text","lang":"es","value":"hola"}]}"""
+            """{"uid":"01020304","readOnly":false,"records":[{"type":"uri","value":"https://txoka.app"},{"type":"text","lang":"en","value":"hello"}]}"""
 
         const val TEXT_ONLY =
-            """{"uid":"01020304","records":[{"type":"text","lang":"es","value":"hola"}]}"""
+            """{"uid":"01020304","records":[{"type":"text","lang":"en","value":"hello"}]}"""
 
         const val INVALID_UID =
-            """{"uid":"0102030405","records":[{"type":"text","lang":"es","value":"hola"}]}"""
+            """{"uid":"0102030405","records":[{"type":"text","lang":"en","value":"hello"}]}"""
     }
 }
