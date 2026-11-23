@@ -55,10 +55,14 @@ val verifyReleaseHasNoNfcTest = tasks.register("verifyReleaseHasNoNfcTest") {
             "Ldev/nfctest/NfcTestReceiver;",
             "Ldev/nfctest/NfcTestInitProvider;",
             "Ldev/nfctest/InjectableNfcReader;",
+            "Ldev/nfctest/NfcTestLaunchActivity;",
+            "Ldev/nfctest/NfcIntentResolver;",
+            "Ldev/nfctest/sample/e2e/",
         )
         val forbiddenManifest = listOf(
             "NfcTestReceiver",
             "NfcTestInitProvider",
+            "NfcTestLaunchActivity",
             "nfctest-init",
             "android.permission.DUMP",
         )
