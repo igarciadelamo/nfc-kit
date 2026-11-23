@@ -34,14 +34,6 @@ No test-only branches in your app.
 > `INfcTag`, so `connect()`, `readNdefMessage()` and `writeNdefMessage()` still
 > fail. Never ship the `nfc-test` module in release.
 
-## Demo
-
-<p align="center">
-  <img src="docs/demo.gif" alt="Cold-start demo: a fake tag launches the sample app" width="480">
-  <br>
-  <sub>Cold start: a fake tag launches the sample app from a stopped process.</sub>
-</p>
-
 ## How it works
 
 ```
