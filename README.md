@@ -45,6 +45,9 @@ scripts/nfc-tap.sh --cold dev.nfctest.sample scripts/examples/uri-text.json
 The result is written to logcat as `cold id=<id> result=<code> data="..."`.
 The script prints `pid before=<pid> after=<pid>`.
 
+The debug extra `--ez no_destination true` forces the "no destination" branch of the
+trampoline. `verifyReleaseHasNoNfcTest` keeps it out of the release build.
+
 ## JSON
 
 ```json
