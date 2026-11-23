@@ -1,4 +1,4 @@
-<h1 align="center">nfc-test</h1>
+<h1 align="center">NFC Test</h1>
 
 <p align="center">
   <strong>Fake NFC tags for Android emulators.</strong><br>
