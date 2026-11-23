@@ -20,7 +20,7 @@ nfc-test/
 ```
 
 Dependencies: `:sample → :nfc-test-api` (implementation) and `:sample → :nfc-test`
-(debugImplementation); `:nfc-test → :nfc-test-api` (`api`).
+(debugImplementation); `:nfc-test → :nfc-test-api` (api).
 
 ## Flow
 
@@ -45,6 +45,30 @@ Dependencies: `:sample → :nfc-test-api` (implementation) and `:sample → :nfc
         ▼
  setResult(code, message, null)  ->  am broadcast prints result=/data=
 ```
+
+## Cold-start flow
+
+```
+ adb shell am start -n <pkg>/dev.nfctest.NfcTestLaunchActivity \
+     --es tag_b64 ... --es id ...
+        │
+        ▼
+ NfcTestLaunchActivity      (debug, DUMP, translucent, noHistory)
+        │  TagSpecParser.parse(json)  -> TagSpec or TagSpecException (result 2)
+        │  spec.toTag()               -> TagFactory (PARCEL, AUTO)
+        ▼
+ NfcIntentResolver.resolve(spec, tag)      (NDEF → TECH → TAG)
+        │  no destination -> result 3
+        ▼
+ startActivity(intent + NEW_TASK)  ->  destination Activity (onCreate)
+        │  immediate finish(), no animation
+        ▼
+ logcat: cold id=<id> result=<code> data="..."
+```
+
+The trampoline is a visible Activity, so its `startActivity` does not hit the
+background-activity-launch restriction. The destination receives the `Intent` with
+`EXTRA_TAG`, `EXTRA_ID` and `EXTRA_NDEF_MESSAGES` as if the system had launched it.
 
 ## Why the receiver lives inside the app
 
