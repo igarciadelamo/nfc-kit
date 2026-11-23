@@ -24,7 +24,7 @@ class IntentActivity : Activity() {
         liveInstances.incrementAndGet()
         content = TextView(this).apply {
             id = R.id.received_info
-            setPadding(32, 32, 32, 32)
+            setPadding(32, 32 + statusBarHeight(), 32, 32)
         }
         setContentView(content)
         handleIntent(intent, "onCreate")
@@ -61,6 +61,11 @@ class IntentActivity : Activity() {
         )
         content.text = "path=$path action=${delivery.action} " +
             "records=${delivery.records.size} uid=${delivery.uid}"
+    }
+
+    private fun statusBarHeight(): Int {
+        val id = resources.getIdentifier("status_bar_height", "dimen", "android")
+        return if (id > 0) resources.getDimensionPixelSize(id) else 0
     }
 
     private companion object {

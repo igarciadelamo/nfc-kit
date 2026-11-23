@@ -28,7 +28,7 @@ class ReaderActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        content = TextView(this).apply { setPadding(32, 32, 32, 32) }
+        content = TextView(this).apply { setPadding(32, 32 + statusBarHeight(), 32, 32) }
         setContentView(content)
         render()
     }
@@ -57,6 +57,11 @@ class ReaderActivity : Activity() {
                 appendLine(format(last))
             }
         }
+    }
+
+    private fun statusBarHeight(): Int {
+        val id = resources.getIdentifier("status_bar_height", "dimen", "android")
+        return if (id > 0) resources.getDimensionPixelSize(id) else 0
     }
 
     private companion object {
