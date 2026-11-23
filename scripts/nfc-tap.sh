@@ -42,6 +42,19 @@ fi
 
 ADB=${ADB:-adb}
 
+# Best-effort PID lookup: pidof first, then ps -A. Empty when unavailable.
+pid_of() {
+    local package=$1
+    local pid
+    pid=$("$ADB" shell pidof "$package" 2>/dev/null | tr -d '\r' | awk '{print $1}')
+    if [ -n "$pid" ]; then
+        echo "$pid"
+        return
+    fi
+    "$ADB" shell ps -A 2>/dev/null | tr -d '\r' |
+        awk -v pkg="$package" '$NF == pkg {print $2; exit}'
+}
+
 if [ "$SOURCE" = "-" ]; then
     JSON=$(cat)
 else
@@ -62,6 +75,8 @@ if [ "$COLD" = "1" ]; then
     if [ -z "${ID:-}" ]; then
         ID="$(date +%s)-$$"
     fi
+
+    BEFORE=$(pid_of "$PACKAGE" || true)
 
     if [ "$KEEP_PROCESS" = "0" ]; then
         "$ADB" shell am force-stop "$PACKAGE" >/dev/null 2>&1 || true
@@ -85,6 +100,9 @@ if [ "$COLD" = "1" ]; then
         fi
         sleep 0.2
     done
+
+    AFTER=$(pid_of "$PACKAGE" || true)
+    echo "pid before=${BEFORE:-} after=${AFTER:-}"
 
     if [ -z "$LINE" ]; then
         echo "error: no cold log line for id=$ID within 5s" >&2

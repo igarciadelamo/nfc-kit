@@ -43,6 +43,7 @@ scripts/nfc-tap.sh --cold dev.nfctest.sample scripts/examples/uri-text.json
 ```
 
 The result is written to logcat as `cold id=<id> result=<code> data="..."`.
+The script prints `pid before=<pid> after=<pid>`.
 
 ## JSON
 

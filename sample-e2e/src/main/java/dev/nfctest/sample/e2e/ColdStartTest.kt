@@ -1,5 +1,6 @@
 package dev.nfctest.sample.e2e
 
+import android.util.Log
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.By
@@ -9,7 +10,9 @@ import java.util.Base64
 import java.util.UUID
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -86,6 +89,37 @@ class ColdStartTest {
     }
 
     @Test
+    fun forceStopKillsProcessAndColdStartUsesNewPid() {
+        shell("am force-stop $packageName")
+        shell("am start -n $packageName/.ReaderActivity")
+        val before = awaitPid(present = true)
+        assertNotNull("no PID before force-stop", before)
+        val beforePid = before!!
+        Log.i(TAG, "pid before force-stop=$beforePid")
+
+        shell("am force-stop $packageName")
+        assertNull("process should be gone after force-stop", awaitPid(present = false))
+        Log.i(TAG, "pid after force-stop=<none>")
+
+        val launch = launchCold(URI_TEXT, keepProcess = true)
+        val info = awaitInfo()
+        assertTrue("path=onCreate expected, got: $info", info.startsWith("path=onCreate "))
+        assertTrue("records=2 expected, got: $info", info.contains("records=2"))
+        assertEquals(1, resultOf(awaitLog(launch.id)))
+
+        val after = awaitPid(present = true)
+        assertNotNull("no PID after cold start", after)
+        val afterPid = after!!
+        Log.i(TAG, "pid after cold start=$afterPid")
+        assertNotEquals(
+            "PID must change after force-stop: before=$beforePid after=$afterPid",
+            beforePid,
+            afterPid,
+        )
+        assertFalse("old pid $beforePid must not be running", pidExists(beforePid))
+    }
+
+    @Test
     fun invalidUidReturnsResult2AndOpensNothing() {
         val launch = launchCold(INVALID_UID)
 
@@ -142,6 +176,31 @@ class ColdStartTest {
         return Launch(id, output)
     }
 
+    private fun samplePid(): String? {
+        val direct = shell("pidof $packageName").trim()
+        if (direct.isNotEmpty()) return direct.split(Regex("\\s+")).first()
+        return shell("ps -A")
+            .lineSequence()
+            .map { it.trim().split(Regex("\\s+")) }
+            .firstOrNull { it.lastOrNull() == packageName }
+            ?.getOrNull(1)
+    }
+
+    private fun awaitPid(present: Boolean): String? {
+        val deadline = System.currentTimeMillis() + TIMEOUT_MS
+        while (System.currentTimeMillis() < deadline) {
+            val pid = samplePid()
+            if ((pid != null) == present) return pid
+            Thread.sleep(POLL_MS)
+        }
+        return samplePid()
+    }
+
+    private fun pidExists(pid: String): Boolean =
+        shell("ps -A").lineSequence().any { line ->
+            line.trim().split(Regex("\\s+")).getOrNull(1) == pid
+        }
+
     private fun awaitInfo(): String {
         val found = device.wait(
             Until.hasObject(By.res(packageName, "received_info").textContains("path=")),
@@ -172,6 +231,7 @@ class ColdStartTest {
         device.executeShellCommand(command)
 
     private companion object {
+        const val TAG = "NfcE2E"
         const val TIMEOUT_MS = 5_000L
         const val POLL_MS = 200L
         val RESULT = Regex("""result=(-?\d+)""")
