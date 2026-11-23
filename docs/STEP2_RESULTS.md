@@ -47,7 +47,7 @@ NfcTest : request mode=implicit -> result=1 data="dispatched via implicit NDEF_D
 NfcTest : request mode=implicit -> result=1 data="dispatched via implicit TAG_DISCOVERED"
 NfcTest : request mode=implicit -> result=3 data="app in background: implicit needs a foreground activity"
 NfcTest : request mode=foreground -> result=3 data="no foreground activity"
-NfcSample : path=onNewIntent action=android.nfc.action.NDEF_DISCOVERED data=https://txoka.app uid=01020304 records=[uri: https://txoka.app, text: hola]
+NfcSample : created=1 live=1 path=onNewIntent action=android.nfc.action.NDEF_DISCOVERED data=https://txoka.app uid=01020304 records=[uri: https://txoka.app, text: hola]
 ```
 
 ## 3. `DUMP` permission
