@@ -1,11 +1,13 @@
 import com.android.build.api.dsl.ApplicationExtension
 import com.android.build.api.dsl.LibraryExtension
 import com.android.build.api.dsl.ManagedVirtualDevice
+import com.android.build.api.dsl.TestExtension
 import com.android.build.api.dsl.TestOptions
 
 plugins {
     alias(libs.plugins.android.library) apply false
     alias(libs.plugins.android.application) apply false
+    alias(libs.plugins.android.test) apply false
 }
 
 /**
@@ -46,5 +48,8 @@ subprojects {
     }
     pluginManager.withPlugin("com.android.library") {
         configureManagedDevices(extensions.getByType(LibraryExtension::class.java).testOptions)
+    }
+    pluginManager.withPlugin("com.android.test") {
+        configureManagedDevices(extensions.getByType(TestExtension::class.java).testOptions)
     }
 }

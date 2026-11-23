@@ -24,6 +24,7 @@ object ReceivedTags {
         val records: List<String>,
         val thread: String,
         val timestamp: Long,
+        val path: String? = null,
     )
 
     private val entries = CopyOnWriteArrayList<Delivery>()
@@ -52,7 +53,12 @@ object ReceivedTags {
         )
     }
 
-    fun fromIntent(source: String, intent: Intent, thread: String): Delivery {
+    fun fromIntent(
+        source: String,
+        intent: Intent,
+        thread: String,
+        path: String? = null,
+    ): Delivery {
         val tag = intent.tagExtra()
         val messages = intent.ndefMessages()
         val message = messages?.firstOrNull() ?: tag?.let { Ndef.get(it)?.cachedNdefMessage }
@@ -66,6 +72,7 @@ object ReceivedTags {
             records = message?.records?.map(NdefSummary::describe).orEmpty(),
             thread = thread,
             timestamp = System.currentTimeMillis(),
+            path = path,
         )
         entries.add(delivery)
         return delivery
@@ -100,6 +107,7 @@ fun ByteArray.toHex(): String = joinToString("") { "%02x".format(it) }
 
 fun format(delivery: ReceivedTags.Delivery): String = buildString {
     appendLine("source: ${delivery.source}")
+    delivery.path?.let { appendLine("path: $it") }
     appendLine("thread: ${delivery.thread}")
     appendLine("action: ${delivery.action}")
     appendLine("data: ${delivery.data}")

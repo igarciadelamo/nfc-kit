@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Stable id for the cold-start e2e tests to read the delivery path. -->
+    <item name="received_info" type="id" />
+</resources>
