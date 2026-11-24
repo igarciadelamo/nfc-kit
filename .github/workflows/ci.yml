@@ -24,11 +24,19 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
 
       # Managed-device suites are not run here: they need an emulator and are
-      # executed locally (see the README).
+      # executed locally (see the README). Maven Central occasionally returns
+      # 429 to shared runner IPs, so retry the build a couple of times.
       - name: Unit tests and builds
-        run: >
-          ./gradlew
-          testDebugUnitTest
-          assembleDebug
-          assembleRelease
-          :sample:verifyReleaseHasNoNfcTest
+        run: |
+          for attempt in 1 2 3; do
+            if ./gradlew \
+              testDebugUnitTest \
+              assembleDebug \
+              assembleRelease \
+              :sample:verifyReleaseHasNoNfcTest; then
+              exit 0
+            fi
+            echo "Attempt $attempt failed; retrying in 30s"
+            sleep 30
+          done
+          exit 1
