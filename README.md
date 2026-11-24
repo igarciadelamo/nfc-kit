@@ -7,9 +7,9 @@
 
 <p align="center">
   <a href="https://jitpack.io/#igarciadelamo/nfc-kit"><img src="https://jitpack.io/v/igarciadelamo/nfc-kit.svg" alt="JitPack"></a>
+  <a href="https://github.com/igarciadelamo/nfc-kit/actions/workflows/ci.yml"><img src="https://github.com/igarciadelamo/nfc-kit/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-blue.svg?style=flat-square" alt="License: Apache 2.0"></a>
   <img src="https://img.shields.io/badge/minSdk-30-3DDC84.svg?style=flat-square&logo=android&logoColor=white" alt="minSdk 30">
-  <img src="https://img.shields.io/badge/tests-managed%20devices%20%C2%B7%20API%2030%20%7C%2034%20%7C%2036-success.svg?style=flat-square" alt="Tested on managed devices API 30, 34 and 36">
 </p>
 
 ---
@@ -33,24 +33,27 @@ scripts/nfc-tap.sh es.igarciadelamo.nfctest.sample scripts/examples/uri-text.jso
 Android emulators have no NFC radio. Testing tag discovery normally needs
 physical tags, a hardware device or a custom build of your app.
 
-`nfc-test` fabricates an `android.nfc.Tag` with an `NdefMessage`, injects it from
-`adb`, and lets your app receive it through the lifecycle it already implements.
-No test-only branches in your app.
+In debug builds the `:nfc-test` module fabricates an `android.nfc.Tag` with an
+`NdefMessage`, injects it from `adb`, and lets your app receive it through the
+lifecycle it already implements. No test-only branches in your app.
+
+> **Names:** *NFC Kit* is the project and the artifact family. `:nfc-reader` is
+> the production module and the only one that ships in release; `:nfc-test` is
+> the debug-only injection module. The repository root is `nfc-kit`; there is no
+> module with that name.
 
 - **Reader mode, foreground dispatch and cold start** — pick the path you want to test.
 - **Automatic delivery** — `auto` mode uses the reader when enabled, falls back to an intent.
 - **Declarative tags** — describe UID and NDEF records in a small JSON file.
 - **Debug-only** — the injection module never ships in release builds.
-- **Verified** — instrumented tests run on API 30, 34 and 36 managed devices.
+- **Verified locally** — instrumented suites run on API 30, 34 and 36 managed
+  devices, outside CI.
 
-> **Scope:** `nfc-test` is compiled into the app under test as a debug-only
-> dependency. It cannot inject tags into a third-party APK or a release build,
-> and the only production change is reading tags through `NfcReaders`.
->
-> **Note:** this is a development and test tool. The injected tag carries
-> discovery metadata (`id`, `techList`, `cachedNdefMessage`) but has no
-> `INfcTag`, so `connect()`, `readNdefMessage()` and `writeNdefMessage()` still
-> fail. Never ship the `nfc-test` module in release.
+> **Scope:** the `:nfc-test` module is compiled into the app under test as a
+> debug-only dependency. It cannot inject tags into a third-party APK or a
+> release build. Reader mode is the only production code change: tags must be
+> read through `NfcReaders`. Foreground and implicit delivery reuse the intent
+> filters and NFC handling the app already has.
 
 ## How it works
 
@@ -80,7 +83,8 @@ code: it is the reader-mode facade plus the `NfcReaders` swap point that
 ## Requirements
 
 - JDK 17 or newer.
-- Android SDK with `compileSdk` 37.
+- Android SDK with `compileSdk` 37 to build this repository. The AARs declare
+  `minCompileSdk` 30, so consumer apps can compile with 30 or newer.
 - AOSP API 30, 34 and 36 system images for Gradle Managed Devices.
 
 ## Getting started
@@ -137,12 +141,12 @@ adb shell am broadcast -a es.igarciadelamo.nfctest.TAP -p <pkg> -f 32 \
   --es tag_b64 <b64> --es mode auto
 ```
 
-| Mode | Behaviour |
-| --- | --- |
-| `auto` *(default)* | Reader if enabled, otherwise foreground, otherwise implicit. |
-| `reader` | Delivers to the active reader-mode callback. |
-| `foreground` | Starts an activity with the foreground-dispatch intent. |
-| `implicit` | Starts an activity through the NDEF/TECH/TAG intent cascade. |
+| Mode | Behaviour | Change in your app |
+| --- | --- | --- |
+| `auto` *(default)* | Reader if enabled, otherwise foreground, otherwise implicit. | Whatever the chosen path needs. |
+| `reader` | Delivers to the active reader-mode callback. | Read through `NfcReaders.get()` and call `enable()` / `disable()`. |
+| `foreground` | Starts the resumed activity with the foreground-dispatch intent. | Handle the NFC intent in `onNewIntent()`. No new code. |
+| `implicit` | Starts an activity through the NDEF/TECH/TAG intent cascade. | Declare the intent filters. No code change. |
 
 `foreground` and `implicit` require a foreground activity; without one they
 return `result=3`.
@@ -160,7 +164,8 @@ return `result=3`.
 `NfcTestLaunchActivity` is a translucent trampoline that builds the tag,
 resolves the NDEF → TECH → TAG cascade and forwards the intent. Launching it from
 the shell avoids the background-activity restriction, and the destination still
-sees the normal NFC extras.
+sees the normal NFC extras. It reuses the destination's intent filters and its
+`onCreate()` intent handling, so no test-only code is needed.
 
 ```bash
 scripts/nfc-tap.sh --cold <package> scripts/examples/uri-text.json
@@ -214,23 +219,29 @@ repositories {
 }
 
 dependencies {
-    implementation("com.github.igarciadelamo.nfc-kit:nfc-reader:0.2.1")
-    debugImplementation("com.github.igarciadelamo.nfc-kit:nfc-test:0.2.1")
+    implementation("com.github.igarciadelamo.nfc-kit:nfc-reader:0.2.2")
+    debugImplementation("com.github.igarciadelamo.nfc-kit:nfc-test:0.2.2")
 }
 ```
 
-`nfc-test` brings `nfc-reader` transitively in debug builds. Keep the explicit
-`nfc-reader` dependency for release builds.
+`:nfc-test` brings `:nfc-reader` transitively in debug builds. Keep the explicit
+`:nfc-reader` dependency for release builds.
 
 ## Verification
 
+CI runs the JVM tests, the debug/release builds and the release guard:
+
 ```bash
-./gradlew assembleDebug assembleDebugAndroidTest assembleRelease
-./gradlew testDebugUnitTest
+./gradlew testDebugUnitTest assembleDebug assembleRelease :sample:verifyReleaseHasNoNfcTest
+```
+
+The managed-device suites are **not** run in CI; run them locally:
+
+```bash
+./gradlew assembleDebugAndroidTest
 ./gradlew :nfc-test:allDevicesGroupAndroidTest
 ./gradlew :sample:allDevicesGroupAndroidTest
 ./gradlew :sample-e2e:allDevicesGroupAndroidTest
-./gradlew :sample:verifyReleaseHasNoNfcTest
 ./gradlew publishToMavenLocal
 ```
 
@@ -254,6 +265,24 @@ The same pattern applies to `:nfc-reader`, `:sample` and `:sample-e2e`. The
 `allDevicesGroupAndroidTest` aliases run a module across all three APIs.
 
 </details>
+
+## Known limitations
+
+- **No card emulation or peer-to-peer.** The tag is fabricated inside your app.
+  There is no HCE and no phone-to-phone NFC.
+- **No NDEF I/O.** The injected `Tag` carries discovery metadata (`id`,
+  `techList`, `cachedNdefMessage`) but has no `INfcTag`, so `connect()`,
+  `readNdefMessage()` and `writeNdefMessage()` fail.
+- **Tech-list XML is not evaluated.** `ACTION_TECH_DISCOVERED` resolves by action
+  only; the `meta-data` tech lists are ignored.
+- **`singleTask` is not verified.** Foreground dispatch is tested with
+  `singleTop`; a `singleTask` destination has not been verified.
+- **`getReferrer()` differs.** A cold-start destination sees the app itself as
+  referrer, not `null` as with the platform.
+- **Foreground and implicit need a resumed activity.** From the background both
+  return `result=3`; there is no way to inject into a background app.
+- **Debug builds only.** The module cannot target a third-party APK or a release
+  build. Never ship `:nfc-test` in release.
 
 ## Documentation
 
