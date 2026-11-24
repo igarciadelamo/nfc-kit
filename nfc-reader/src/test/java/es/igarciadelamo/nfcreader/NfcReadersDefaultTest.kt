@@ -1,4 +1,4 @@
-package es.igarciadelamo.nfctest.api
+package es.igarciadelamo.nfcreader
 
 import org.junit.Assert.assertSame
 import org.junit.Test

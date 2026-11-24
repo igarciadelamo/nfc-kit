@@ -1,4 +1,4 @@
-package es.igarciadelamo.nfctest.api
+package es.igarciadelamo.nfcreader
 
 import android.app.Activity
 import android.os.Bundle
@@ -12,7 +12,7 @@ import org.junit.runner.RunWith
 class TestActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(android.widget.TextView(this).apply { text = "nfc-test-api" })
+        setContentView(android.widget.TextView(this).apply { text = "nfc-reader" })
     }
 }
 

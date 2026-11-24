@@ -14,10 +14,10 @@ Commands run:
 ./gradlew :sample-e2e:api30DebugAndroidTest :nfc-test:api30DebugAndroidTest
 ./gradlew :sample-e2e:api34DebugAndroidTest :sample-e2e:api36DebugAndroidTest \
     :nfc-test:api34DebugAndroidTest :nfc-test:api36DebugAndroidTest
-./gradlew :nfc-test:api30DebugAndroidTest :nfc-test-api:api30DebugAndroidTest \
+./gradlew :nfc-test:api30DebugAndroidTest :nfc-reader:api30DebugAndroidTest \
     :sample:api30DebugAndroidTest
 ./gradlew :nfc-test:api34DebugAndroidTest :nfc-test:api36DebugAndroidTest \
-    :nfc-test-api:api34DebugAndroidTest :nfc-test-api:api36DebugAndroidTest \
+    :nfc-reader:api34DebugAndroidTest :nfc-reader:api36DebugAndroidTest \
     :sample:api34DebugAndroidTest :sample:api36DebugAndroidTest
 ./gradlew allDevicesGroupAndroidTest verifyReleaseHasNoNfcTest
 ```
@@ -56,7 +56,7 @@ test APK has no NFC filters and `resolve()` returns `null`.
 | Module | API 30 | API 34 | API 36 |
 | --- | --- | --- | --- |
 | `:nfc-test` | 46/46 | 46/46 | 46/46 |
-| `:nfc-test-api` | 2/2 | 2/2 | 2/2 |
+| `:nfc-reader` | 2/2 | 2/2 | 2/2 |
 | `:sample` | 13/13 | 13/13 | 13/13 |
 | `:sample-e2e` | 8/8 | 8/8 | 8/8 |
 

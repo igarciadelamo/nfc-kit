@@ -4,9 +4,9 @@ import android.app.Activity
 import android.os.Bundle
 import android.util.Log
 import android.widget.TextView
-import es.igarciadelamo.nfctest.api.NfcReader
-import es.igarciadelamo.nfctest.api.NfcReaders
-import es.igarciadelamo.nfctest.api.TagCallback
+import es.igarciadelamo.nfcreader.NfcReader
+import es.igarciadelamo.nfcreader.NfcReaders
+import es.igarciadelamo.nfcreader.TagCallback
 
 /**
  * Reads tags through [NfcReaders], i.e. through whatever reader the debug module

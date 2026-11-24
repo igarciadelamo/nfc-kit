@@ -3,7 +3,7 @@ package es.igarciadelamo.nfctest
 import android.app.Application
 import android.content.Context
 import android.util.Log
-import es.igarciadelamo.nfctest.api.NfcReaders
+import es.igarciadelamo.nfcreader.NfcReaders
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**

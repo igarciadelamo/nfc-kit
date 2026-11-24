@@ -38,7 +38,7 @@ afterEvaluate {
                 pom {
                     name.set("nfc-test")
                     description.set("Debug-only NFC tag injection receiver and tag factory.")
-                    url.set("https://github.com/igarciadelamo/nfc-test")
+                    url.set("https://github.com/igarciadelamo/nfc-kit")
                     licenses {
                         license {
                             name.set("The Apache License, Version 2.0")
@@ -55,7 +55,7 @@ afterEvaluate {
                     scm {
                         connection.set("scm:git:git@github.com:igarciadelamo/nfc-test.git")
                         developerConnection.set("scm:git:git@github.com:igarciadelamo/nfc-test.git")
-                        url.set("https://github.com/igarciadelamo/nfc-test")
+                        url.set("https://github.com/igarciadelamo/nfc-kit")
                     }
                 }
             }
@@ -65,7 +65,7 @@ afterEvaluate {
 
 
 dependencies {
-    api(project(":nfc-test-api"))
+    api(project(":nfc-reader"))
 
     testImplementation(libs.junit)
     testImplementation(libs.json)

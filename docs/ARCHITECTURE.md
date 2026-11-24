@@ -3,8 +3,8 @@
 ## Modules
 
 ```
-nfc-test/
-├── nfc-test-api: Android library, es.igarciadelamo.nfctest.api
+nfc-kit/
+├── nfc-reader: Android library, es.igarciadelamo.nfcreader
 │   NfcReader, RealNfcReader, NfcReaders, TagCallback
 │   → implementation() in the app · shipped in RELEASE
 │
@@ -17,15 +17,15 @@ nfc-test/
 │
 ├── sample: demo app, es.igarciadelamo.nfctest.sample
 │   ReaderActivity · IntentActivity · ReceivedTags
-│   (does not reference es.igarciadelamo.nfctest; only es.igarciadelamo.nfctest.api)
+│   (does not reference es.igarciadelamo.nfctest; only es.igarciadelamo.nfcreader)
 │
 └── sample-e2e: com.android.test, es.igarciadelamo.nfctest.sample.e2e
     ColdStartTest (UiAutomator, separate process)
     targetPackage = "es.igarciadelamo.nfctest.sample"
 ```
 
-Dependencies: `:sample → :nfc-test-api` (implementation) and
-`:sample → :nfc-test` (debugImplementation); `:nfc-test → :nfc-test-api`
+Dependencies: `:sample → :nfc-reader` (implementation) and
+`:sample → :nfc-test` (debugImplementation); `:nfc-test → :nfc-reader`
 (`api`). `:sample-e2e` does not depend on `:nfc-test`; it targets `:sample` and
 uses UiAutomator.
 
