@@ -19,8 +19,8 @@ jobs:
           distribution: temurin
           java-version: 21
 
-      - uses: android-actions/setup-android@v3
-
+      # ubuntu-latest already ships the Android SDK with the licenses accepted;
+      # AGP downloads the compileSdk platform if it is missing.
       - uses: gradle/actions/setup-gradle@v4
 
       # Managed-device suites are not run here: they need an emulator and are
