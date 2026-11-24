@@ -109,9 +109,9 @@ fun format(delivery: ReceivedTags.Delivery): String = buildString {
     appendLine("source: ${delivery.source}")
     delivery.path?.let { appendLine("path: $it") }
     appendLine("thread: ${delivery.thread}")
-    appendLine("action: ${delivery.action}")
-    appendLine("data: ${delivery.data}")
-    appendLine("type: ${delivery.type}")
+    delivery.action?.let { appendLine("action: $it") }
+    delivery.data?.let { appendLine("data: $it") }
+    delivery.type?.let { appendLine("type: $it") }
     appendLine("uid: ${delivery.uid}")
     delivery.records.forEach { appendLine("record: $it") }
 }

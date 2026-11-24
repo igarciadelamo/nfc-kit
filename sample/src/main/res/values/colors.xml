@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="nfc_background">#F4F1FF</color>
+    <color name="nfc_accent">#7C4DFF</color>
+    <color name="nfc_accent_pink">#FF3D71</color>
+    <color name="nfc_success">#00E676</color>
+    <color name="nfc_success_dark">#00A152</color>
+    <color name="nfc_success_text">#003B16</color>
+    <color name="nfc_surface">#FFFFFFFF</color>
+    <color name="nfc_text">#14121F</color>
+    <color name="nfc_text_muted">#6B6880</color>
+    <color name="nfc_divider">#EEEAF7</color>
+    <color name="nfc_white">#FFFFFFFF</color>
+    <color name="nfc_white_72">#B8FFFFFF</color>
+    <color name="nfc_white_16">#29FFFFFF</color>
+    <color name="nfc_scrim">#E60B0618</color>
+</resources>
