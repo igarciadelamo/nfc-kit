@@ -29,7 +29,7 @@ android {
 
 
 dependencies {
-    implementation(project(":nfc-test-api"))
+    implementation(project(":nfc-reader"))
     debugImplementation(project(":nfc-test"))
 
     testImplementation(libs.junit)

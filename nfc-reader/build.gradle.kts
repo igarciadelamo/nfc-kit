@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "es.igarciadelamo.nfctest.api"
+    namespace = "es.igarciadelamo.nfcreader"
     compileSdk = 37
 
     defaultConfig {
@@ -36,9 +36,9 @@ afterEvaluate {
                 version = project.version.toString()
 
                 pom {
-                    name.set("nfc-test-api")
-                    description.set("Release-safe NFC reader facade for the nfc-test library.")
-                    url.set("https://github.com/igarciadelamo/nfc-test")
+                    name.set("nfc-reader")
+                    description.set("Production NFC reader facade for nfc-kit.")
+                    url.set("https://github.com/igarciadelamo/nfc-kit")
                     licenses {
                         license {
                             name.set("The Apache License, Version 2.0")
@@ -55,7 +55,7 @@ afterEvaluate {
                     scm {
                         connection.set("scm:git:git@github.com:igarciadelamo/nfc-test.git")
                         developerConnection.set("scm:git:git@github.com:igarciadelamo/nfc-test.git")
-                        url.set("https://github.com/igarciadelamo/nfc-test")
+                        url.set("https://github.com/igarciadelamo/nfc-kit")
                     }
                 }
             }

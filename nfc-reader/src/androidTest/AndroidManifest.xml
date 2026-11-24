@@ -3,7 +3,7 @@
 
     <application>
         <activity
-            android:name="es.igarciadelamo.nfctest.api.TestActivity"
+            android:name="es.igarciadelamo.nfcreader.TestActivity"
             android:exported="true" />
     </application>
 

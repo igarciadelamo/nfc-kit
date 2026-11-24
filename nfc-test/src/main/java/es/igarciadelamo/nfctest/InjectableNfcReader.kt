@@ -3,10 +3,10 @@ package es.igarciadelamo.nfctest
 import android.app.Activity
 import android.nfc.Tag
 import android.util.Log
-import es.igarciadelamo.nfctest.api.EnableResult
-import es.igarciadelamo.nfctest.api.NfcReader
-import es.igarciadelamo.nfctest.api.RealNfcReader
-import es.igarciadelamo.nfctest.api.TagCallback
+import es.igarciadelamo.nfcreader.EnableResult
+import es.igarciadelamo.nfcreader.NfcReader
+import es.igarciadelamo.nfcreader.RealNfcReader
+import es.igarciadelamo.nfcreader.TagCallback
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 

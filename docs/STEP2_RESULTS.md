@@ -20,7 +20,7 @@ Commands run:
 | --- | --- | --- | --- |
 | `:nfc-test` (spike, no regression) | 45/45 OK | 45/45 OK | 45/45 OK |
 | `:sample` (e2e) | 13/13 OK | 13/13 OK | 13/13 OK |
-| `:nfc-test-api` (reader) | 2/2 OK | 2/2 OK | 2/2 OK |
+| `:nfc-reader` (reader) | 2/2 OK | 2/2 OK | 2/2 OK |
 
 The root alias `./gradlew allDevicesGroupAndroidTest` runs the three modules and
 finished with `BUILD SUCCESSFUL` (the results in the table).
@@ -101,7 +101,7 @@ The task builds `:sample:assembleRelease` and checks:
 Result: **OK** (clean release). It is wired into `check`.
 
 About `NfcReaders.get()` in release: `NfcReadersDefaultTest` (JVM, in
-`:nfc-test-api`) checks that the default factory returns `RealNfcReader` and that
+`:nfc-reader`) checks that the default factory returns `RealNfcReader` and that
 it is only replaced when someone does so explicitly; the replacing provider does
 not exist in release (verified above).
 

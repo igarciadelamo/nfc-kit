@@ -1,4 +1,4 @@
-<h1 align="center">NFC Test</h1>
+<h1 align="center">NFC Kit</h1>
 
 <p align="center">
   <strong>Fake NFC tags for Android emulators.</strong><br>
@@ -6,7 +6,7 @@
 </p>
 
 <p align="center">
-  <a href="https://jitpack.io/#igarciadelamo/nfc-test"><img src="https://jitpack.io/v/igarciadelamo/nfc-test.svg" alt="JitPack"></a>
+  <a href="https://jitpack.io/#igarciadelamo/nfc-kit"><img src="https://jitpack.io/v/igarciadelamo/nfc-kit.svg" alt="JitPack"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-blue.svg?style=flat-square" alt="License: Apache 2.0"></a>
   <img src="https://img.shields.io/badge/minSdk-30-3DDC84.svg?style=flat-square&logo=android&logoColor=white" alt="minSdk 30">
   <img src="https://img.shields.io/badge/tests-managed%20devices%20%C2%B7%20API%2030%20%7C%2034%20%7C%2036-success.svg?style=flat-square" alt="Tested on managed devices API 30, 34 and 36">
@@ -28,7 +28,7 @@ NDEF records.
 scripts/nfc-tap.sh es.igarciadelamo.nfctest.sample scripts/examples/uri-text.json
 ```
 
-## Why nfc-test?
+## Why nfc-kit?
 
 Android emulators have no NFC radio. Testing tag discovery normally needs
 physical tags, a hardware device or a custom build of your app.
@@ -68,10 +68,14 @@ the real platform reader.
 
 | Module | Build | Purpose |
 | --- | --- | --- |
-| `:nfc-test-api` | `implementation` | Release-safe `NfcReader` facade, `RealNfcReader` and `NfcReaders`. |
+| `:nfc-reader` | `implementation` | Production `NfcReader` facade, `RealNfcReader` and `NfcReaders`. Platform NFC only. |
 | `:nfc-test` | `debugImplementation` | Debug-only receiver, init provider, tag factory and cold-start trampoline. |
 | `:sample` | demo | Minimal app showing reader mode and intent delivery. |
 | `:sample-e2e` | tests | UiAutomator cold-start test against the sample. |
+
+`:nfc-reader` is the only module that ships in release. It contains no test
+code: it is the reader-mode facade plus the `NfcReaders` swap point that
+`:nfc-test` replaces in debug builds.
 
 ## Requirements
 
@@ -85,7 +89,7 @@ the real platform reader.
 
 ```kotlin
 dependencies {
-    implementation(project(":nfc-test-api"))
+    implementation(project(":nfc-reader"))
     debugImplementation(project(":nfc-test"))
 }
 ```
@@ -210,13 +214,13 @@ repositories {
 }
 
 dependencies {
-    implementation("com.github.igarciadelamo.nfc-test:nfc-test-api:0.1.0")
-    debugImplementation("com.github.igarciadelamo.nfc-test:nfc-test:0.1.0")
+    implementation("com.github.igarciadelamo.nfc-kit:nfc-reader:0.2.0")
+    debugImplementation("com.github.igarciadelamo.nfc-kit:nfc-test:0.2.0")
 }
 ```
 
-`nfc-test` brings `nfc-test-api` transitively in debug builds. Keep the explicit
-`nfc-test-api` dependency for release builds.
+`nfc-test` brings `nfc-reader` transitively in debug builds. Keep the explicit
+`nfc-reader` dependency for release builds.
 
 ## Verification
 
@@ -246,7 +250,7 @@ command, use the per-API task names:
 ./gradlew :nfc-test:api36DebugAndroidTest
 ```
 
-The same pattern applies to `:nfc-test-api`, `:sample` and `:sample-e2e`. The
+The same pattern applies to `:nfc-reader`, `:sample` and `:sample-e2e`. The
 `allDevicesGroupAndroidTest` aliases run a module across all three APIs.
 
 </details>

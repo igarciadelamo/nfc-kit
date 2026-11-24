@@ -1,4 +1,4 @@
-package es.igarciadelamo.nfctest.api
+package es.igarciadelamo.nfcreader
 
 import android.app.Activity
 import android.nfc.NfcAdapter

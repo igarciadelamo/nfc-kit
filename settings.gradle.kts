@@ -14,6 +14,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "nfc-test"
+rootProject.name = "nfc-kit"
 
-include(":nfc-test-api", ":nfc-test", ":sample", ":sample-e2e")
+include(":nfc-reader", ":nfc-test", ":sample", ":sample-e2e")
