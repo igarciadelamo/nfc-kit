@@ -12,6 +12,10 @@
   <img src="https://img.shields.io/badge/tests-managed%20devices%20%C2%B7%20API%2030%20%7C%2034%20%7C%2036-success.svg?style=flat-square" alt="Tested on managed devices API 30, 34 and 36">
 </p>
 
+<p align="center">
+  <img src="docs/demo.gif" alt="Sending a fake NFC tag with scripts/nfc-tap.sh and the sample app showing the delivered tag">
+</p>
+
 ---
 
 ## Why nfc-test?
