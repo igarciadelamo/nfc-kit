@@ -214,8 +214,8 @@ repositories {
 }
 
 dependencies {
-    implementation("com.github.igarciadelamo.nfc-kit:nfc-reader:0.2.0")
-    debugImplementation("com.github.igarciadelamo.nfc-kit:nfc-test:0.2.0")
+    implementation("com.github.igarciadelamo.nfc-kit:nfc-reader:0.2.1")
+    debugImplementation("com.github.igarciadelamo.nfc-kit:nfc-test:0.2.1")
 }
 ```
 
