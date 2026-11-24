@@ -26,6 +26,17 @@ android {
     }
 }
 
+// The library only uses API 30 symbols (newer calls are guarded), so do not
+// force consumers onto this project's compileSdk. AGP 9 would default the AAR
+// metadata to compileSdk (37) otherwise.
+androidComponents {
+    onVariants { variant ->
+        variant.aarMetadata.minCompileSdk {
+            version = release(30)
+        }
+    }
+}
+
 afterEvaluate {
     publishing {
         publications {

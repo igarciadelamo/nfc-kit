@@ -26,6 +26,15 @@ android {
     }
 }
 
+// Same rationale as :nfc-reader: keep consumers free to compile below 37.
+androidComponents {
+    onVariants { variant ->
+        variant.aarMetadata.minCompileSdk {
+            version = release(30)
+        }
+    }
+}
+
 afterEvaluate {
     publishing {
         publications {
