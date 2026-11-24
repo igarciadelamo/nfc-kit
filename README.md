@@ -12,11 +12,21 @@
   <img src="https://img.shields.io/badge/tests-managed%20devices%20%C2%B7%20API%2030%20%7C%2034%20%7C%2036-success.svg?style=flat-square" alt="Tested on managed devices API 30, 34 and 36">
 </p>
 
+---
+
+## Demo
+
 <p align="center">
-  <img src="docs/demo.gif" alt="Sending a fake NFC tag with scripts/nfc-tap.sh and the sample app showing the delivered tag">
+  <img src="docs/demo.gif" width="800" alt="scripts/nfc-tap.sh sending a fake tag and the sample app showing it">
 </p>
 
----
+`nfc-tap.sh` sends `scripts/examples/uri-text.json` to the sample app while it is
+open. The tag arrives through reader mode and the app shows the delivered UID and
+NDEF records.
+
+```bash
+scripts/nfc-tap.sh es.igarciadelamo.nfctest.sample scripts/examples/uri-text.json
+```
 
 ## Why nfc-test?
 
