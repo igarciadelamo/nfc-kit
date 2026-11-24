@@ -1,4 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">NFC Test Sample</string>
+
+    <string name="badge">NFC TEST</string>
+    <string name="reader_title">Reader mode</string>
+    <string name="reader_subtitle">Tap a tag on the emulator while this screen is in the foreground.</string>
+    <string name="intent_title">Intent dispatch</string>
+    <string name="intent_subtitle">Tags delivered via NDEF_DISCOVERED, TAG_DISCOVERED or cold start.</string>
+
+    <string name="state_label">STATUS</string>
+    <string name="state_waiting">Waiting for a tag…</string>
+    <string name="state_received">Tag received!</string>
+    <string name="delivery_label">LAST DELIVERY</string>
+    <string name="delivery_hint">Nothing received yet · send a tag with scripts/nfc-tap.sh</string>
+
+    <string name="modal_kicker">NFC TAG DETECTED</string>
+    <string name="modal_title_reader">Tag read!</string>
+    <string name="modal_title_cold">Cold start!</string>
+    <string name="modal_title_intent">Tag received!</string>
+    <string name="modal_uid_label">UID</string>
+    <string name="modal_records">RECORDS (%1$d)</string>
+    <string name="modal_no_records">no records</string>
+    <string name="modal_hint">Tap outside the card to close</string>
+    <string name="modal_close">Close</string>
 </resources>

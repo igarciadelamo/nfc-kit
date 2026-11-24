@@ -16,17 +16,20 @@ import java.util.concurrent.atomic.AtomicInteger
  */
 class IntentActivity : Activity() {
 
-    private lateinit var content: TextView
+    private lateinit var state: TextView
+    private lateinit var details: TextView
+    private lateinit var modal: TagModal
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         createdInstances.incrementAndGet()
         liveInstances.incrementAndGet()
-        content = TextView(this).apply {
-            id = R.id.received_info
-            setPadding(32, 32 + statusBarHeight(), 32, 32)
-        }
-        setContentView(content)
+        setContentView(R.layout.activity_sample)
+        findViewById<TextView>(R.id.header_title).setText(R.string.intent_title)
+        findViewById<TextView>(R.id.header_subtitle).setText(R.string.intent_subtitle)
+        state = findViewById(R.id.state)
+        details = findViewById(R.id.received_info)
+        modal = TagModal(findViewById(R.id.tag_modal))
         handleIntent(intent, "onCreate")
     }
 
@@ -44,7 +47,9 @@ class IntentActivity : Activity() {
     private fun handleIntent(intent: Intent?, path: String) {
         if (intent == null || intent.action?.startsWith(NFC_ACTION_PREFIX) != true) {
             // Ignore the launcher intent; this screen only cares about NFC dispatch.
-            content.text = "Waiting for a tag..."
+            state.setText(R.string.state_waiting)
+            state.setTextColor(getColor(R.color.nfc_text_muted))
+            details.setText(R.string.delivery_hint)
             return
         }
         val delivery = ReceivedTags.fromIntent(
@@ -59,13 +64,11 @@ class IntentActivity : Activity() {
                 "action=${delivery.action} data=${delivery.data} type=${delivery.type} " +
                 "uid=${delivery.uid} records=${delivery.records.size}",
         )
-        content.text = "path=$path action=${delivery.action} " +
+        state.setText(R.string.state_received)
+        state.setTextColor(getColor(R.color.nfc_success_dark))
+        details.text = "path=$path action=${delivery.action} " +
             "records=${delivery.records.size} uid=${delivery.uid}"
-    }
-
-    private fun statusBarHeight(): Int {
-        val id = resources.getIdentifier("status_bar_height", "dimen", "android")
-        return if (id > 0) resources.getDimensionPixelSize(id) else 0
+        modal.show(delivery)
     }
 
     private companion object {
