@@ -93,12 +93,16 @@ code: it is the reader-mode facade plus the `NfcReaders` swap point that
 
 ### 1. Add the dependencies
 
+Inside this repository the modules are consumed as projects:
+
 ```kotlin
 dependencies {
     implementation(project(":nfc-reader"))
     debugImplementation(project(":nfc-test"))
 }
 ```
+
+A consuming app uses the published coordinates instead; see [JitPack](#jitpack).
 
 ### 2. Read tags through the facade
 
@@ -163,6 +167,32 @@ return `result=3`.
 | `3` | No destination. |
 | `4` | No reader. |
 | `5` | Unexpected error. |
+
+For `implicit` and cold start, the destination activity needs the usual NFC
+intent filters. This is all a URL tag needs:
+
+```xml
+<activity
+    android:name=".TagActivity"
+    android:exported="true"
+    android:launchMode="singleTop">
+    <intent-filter>
+        <action android:name="android.nfc.action.NDEF_DISCOVERED" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <data android:scheme="https" />
+    </intent-filter>
+    <intent-filter>
+        <action android:name="android.nfc.action.TAG_DISCOVERED" />
+        <category android:name="android.intent.category.DEFAULT" />
+    </intent-filter>
+</activity>
+```
+
+`foreground` does not use these filters: it delivers to the resumed activity, so
+handle the intent in `onNewIntent()`. `implicit` and cold start resolve
+NDEF → TECH → TAG against them. A `TECH_DISCOVERED` filter also needs a
+`meta-data` tech list, which is not evaluated yet (see
+[Known limitations](#known-limitations)).
 
 ## Cold start
 
@@ -254,6 +284,10 @@ To check the published artifacts locally:
 ```bash
 ./gradlew publishToMavenLocal
 ```
+
+For an external check, build a separate app against the JitPack coordinates with
+`compileSdk` 30 or newer, then run reader mode and `scripts/nfc-tap.sh --cold`
+against it.
 
 The `REFLECTION` tag strategy needs `hidden_api_policy=1` while the emulator
 boots. Without it, the `REFLECTION` cases are skipped instead of failing.
