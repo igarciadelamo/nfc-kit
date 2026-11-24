@@ -53,8 +53,8 @@ afterEvaluate {
                         }
                     }
                     scm {
-                        connection.set("scm:git:git@github.com:igarciadelamo/nfc-test.git")
-                        developerConnection.set("scm:git:git@github.com:igarciadelamo/nfc-test.git")
+                        connection.set("scm:git:git@github.com:igarciadelamo/nfc-kit.git")
+                        developerConnection.set("scm:git:git@github.com:igarciadelamo/nfc-kit.git")
                         url.set("https://github.com/igarciadelamo/nfc-kit")
                     }
                 }
