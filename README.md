@@ -60,6 +60,8 @@ lifecycle it already implements. No test-only branches in your app.
 ```
 adb broadcast ──► NfcTestReceiver ──► TagDispatcher ──┬─► InjectableNfcReader ──► app callback
                                                       └─► Intent (foreground / implicit)
+
+adb shell am start ──► NfcTestLaunchActivity ──► NfcIntentResolver ──► Intent (cold start)
 ```
 
 The debug provider installs `InjectableNfcReader` in `NfcReaders.factory` before
@@ -140,6 +142,9 @@ Or call the broadcast directly:
 adb shell am broadcast -a es.igarciadelamo.nfctest.TAP -p <pkg> -f 32 \
   --es tag_b64 <b64> --es mode auto
 ```
+
+`-f 32` sets `FLAG_INCLUDE_STOPPED_PACKAGES`, so a freshly installed app in the
+stopped state still receives the broadcast.
 
 | Mode | Behaviour | Change in your app |
 | --- | --- | --- |
@@ -242,6 +247,11 @@ The managed-device suites are **not** run in CI; run them locally:
 ./gradlew :nfc-test:allDevicesGroupAndroidTest
 ./gradlew :sample:allDevicesGroupAndroidTest
 ./gradlew :sample-e2e:allDevicesGroupAndroidTest
+```
+
+To check the published artifacts locally:
+
+```bash
 ./gradlew publishToMavenLocal
 ```
 
@@ -280,7 +290,7 @@ The same pattern applies to `:nfc-reader`, `:sample` and `:sample-e2e`. The
 - **`getReferrer()` differs.** A cold-start destination sees the app itself as
   referrer, not `null` as with the platform.
 - **Foreground and implicit need a resumed activity.** From the background both
-  return `result=3`; there is no way to inject into a background app.
+  return `result=3`; use `--cold` for closed or background apps.
 - **Debug builds only.** The module cannot target a third-party APK or a release
   build. Never ship `:nfc-test` in release.
 
