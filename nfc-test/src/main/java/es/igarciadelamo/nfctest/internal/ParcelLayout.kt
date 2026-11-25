@@ -15,9 +15,9 @@ internal interface TagParcelLayout {
 }
 
 /**
- * Android 11 through Android 13 (API 30-33).
+ * Android 8.0 through Android 13 (API 26-33).
  *
- * AOSP: Tag.writeToParcel writes:
+ * AOSP `Tag.writeToParcel` is identical in this range:
  *   writeBytesWithNull(id)  -> int length + byte[] (writeByteArray writes the length again)
  *   int techList.length
  *   int[] techList          -> writeIntArray also writes its own length
@@ -27,7 +27,7 @@ internal interface TagParcelLayout {
  *
  * Android 13 has the mCookie field but does not serialize it.
  */
-internal object ParcelLayoutApi30To33 : TagParcelLayout {
+internal object ParcelLayoutApi26To33 : TagParcelLayout {
     override fun writeToParcel(
         dest: Parcel,
         id: ByteArray,
@@ -47,7 +47,7 @@ internal object ParcelLayoutApi30To33 : TagParcelLayout {
 /**
  * Android 14 and newer (API 34+).
  *
- * Same as [ParcelLayoutApi30To33] plus `long cookie` between serviceHandle and isMock.
+ * Same as [ParcelLayoutApi26To33] plus `long cookie` between serviceHandle and isMock.
  */
 internal object ParcelLayoutApi34Plus : TagParcelLayout {
     override fun writeToParcel(
@@ -70,7 +70,7 @@ internal object ParcelLayoutApi34Plus : TagParcelLayout {
 internal object ParcelLayout {
     fun forSdkInt(sdkInt: Int = Build.VERSION.SDK_INT): TagParcelLayout = when {
         sdkInt >= 34 -> ParcelLayoutApi34Plus
-        sdkInt >= 30 -> ParcelLayoutApi30To33
-        else -> error("Unsupported SDK $sdkInt: this spike only covers API 30+")
+        sdkInt >= 26 -> ParcelLayoutApi26To33
+        else -> error("Unsupported SDK $sdkInt: NFC Kit supports API 26+")
     }
 }

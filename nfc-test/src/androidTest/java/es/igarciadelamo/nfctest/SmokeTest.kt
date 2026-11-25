@@ -11,7 +11,7 @@ import org.junit.runner.RunWith
 class SmokeTest {
 
     @Test
-    fun emulatorIsAtLeastApi30() {
-        assertTrue("Unexpected SDK_INT=${Build.VERSION.SDK_INT}", Build.VERSION.SDK_INT >= 30)
+    fun emulatorIsAtLeastApi26() {
+        assertTrue("Unexpected SDK_INT=${Build.VERSION.SDK_INT}", Build.VERSION.SDK_INT >= 26)
     }
 }

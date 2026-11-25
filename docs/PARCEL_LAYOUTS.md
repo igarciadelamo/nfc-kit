@@ -7,16 +7,16 @@ source for the relevant branch; the empirical comparison is in
 ## Summary
 
 `Tag.writeToParcel` does not use the same layout on every version. Two families
-matter for this spike:
+matter for NFC Kit:
 
 | Family | APIs | `long cookie` | `Tag.createMockTag` |
 | --- | --- | --- | --- |
-| A | 30, 31, 32, 33 | No | `(byte[] id, int[] techList, Bundle[] extras)` |
+| A | 26 through 33 | No | `(byte[] id, int[] techList, Bundle[] extras)` |
 | B | 34, 36 (35 not reviewed) | Yes | `(byte[] id, int[] techList, Bundle[] extras, long cookie)` |
 
-`Tag.java` was reviewed in `frameworks/base` for API 30 and 34 and in the
-Mainline module `packages/modules/Nfc` for API 36. Android 15 (API 35) was not
-reviewed.
+`Tag.java` was reviewed in `frameworks/base` for API 26, 30 and 34, and in the
+Mainline module `packages/modules/Nfc` for API 36. Android 8.0 through Android 13
+share the same layout. Android 15 (API 35) was not reviewed.
 
 ## Fields, in order
 
@@ -39,9 +39,11 @@ Two details are not obvious:
 - `mTechList` contains `TagTechnology` codes (`NFC_A = 1`, `NDEF = 6`), not
   strings. `Tag` builds `mTechStringList` internally in the constructor.
 
-## API 30 (Android 11)
+## API 26 through 33 (Android 8.0 through 13)
 
-Source:
+Sources:
+<https://android.googlesource.com/platform/frameworks/base/+/refs/heads/android8.0.0_r1/core/java/android/nfc/Tag.java>
+and
 <https://android.googlesource.com/platform/frameworks/base/+/refs/heads/android11-release/core/java/android/nfc/Tag.java>
 
 ```java
@@ -61,7 +63,8 @@ public static Tag createMockTag(byte[] id, int[] techList, Bundle[] techListExtr
 }
 ```
 
-Status: **VERIFIED in source**. Empirical comparison: see `SPIKE_RESULTS.md`.
+Status: **VERIFIED in source**; the layout is identical in both branches.
+Empirical comparison: see `SPIKE_RESULTS.md`.
 
 ## API 34 (Android 14)
 
@@ -114,9 +117,9 @@ Compared with `Ndef.java` and `NfcA.java` from the same branches:
 | NfcA | `sak` | `short` |
 | NfcA | `atqa` | `byte[]` |
 
-In API 30 the `Ndef` constructor calls `extras.getParcelable(EXTRA_NDEF_MSG)`; in
-API 34+ it uses the typed variant. In both cases the value must be an
-`NdefMessage`.
+In API 26 through 33 the `Ndef` constructor calls
+`extras.getParcelable(EXTRA_NDEF_MSG)`; in API 34+ it uses the typed variant. In
+both cases the value must be an `NdefMessage`.
 
 ## Empirical comparison
 
@@ -126,9 +129,10 @@ layout with a Tag created by `Tag.createMockTag` and with the output of
 
 | API | Size | PARCEL vs platform | `createMockTag` signature |
 | --- | --- | --- | --- |
+| 26 | 408 B | byte-for-byte identical | `(byte[], int[], Bundle[])` |
 | 30 | 408 B | byte-for-byte identical | `(byte[], int[], Bundle[])` |
 | 34 | 420 B | byte-for-byte identical | `(byte[], int[], Bundle[], long)` |
 | 36 | 428 B | byte-for-byte identical | `(byte[], int[], Bundle[], long)` |
 
-Run on 2026-11-20 on GMD AOSP emulators (Pixel 6). Details and commands are in
-[`SPIKE_RESULTS.md`](SPIKE_RESULTS.md).
+Run on GMD AOSP emulators (Pixel 6): API 26 on 2026-11-25, API 30/34/36 on
+2026-11-20. Details and commands are in [`SPIKE_RESULTS.md`](SPIKE_RESULTS.md).

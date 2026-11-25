@@ -27,6 +27,7 @@ subprojects {
                 systemImageSource = "aosp"
             }
 
+        val api26 = device("api26", 26)
         val api30 = device("api30", 30)
         val api34 = device("api34", 34)
         val api36 = device("api36", 36)
@@ -34,12 +35,22 @@ subprojects {
         testOptions.managedDevices.groups.create("allDevices").targetDevices
             .addAll(listOf(api30, api34, api36))
 
+        // Compatibility floor, kept separate so the main matrix stays at 30+.
+        testOptions.managedDevices.groups.create("compat").targetDevices
+            .add(api26)
+
         // AGP generates allDevicesGroupDebugAndroidTest; keep the documented
         // entry point stable in every module.
         tasks.register("allDevicesGroupAndroidTest") {
             group = "verification"
             description = "Alias for allDevicesGroupDebugAndroidTest."
             dependsOn("allDevicesGroupDebugAndroidTest")
+        }
+
+        tasks.register("compatGroupAndroidTest") {
+            group = "verification"
+            description = "Alias for compatGroupDebugAndroidTest."
+            dependsOn("compatGroupDebugAndroidTest")
         }
     }
 
