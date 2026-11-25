@@ -206,8 +206,15 @@ class ColdStartTest {
     }
 
     private fun samplePid(): String? {
-        val direct = shell("pidof $packageName").trim()
-        if (direct.isNotEmpty()) return direct.split(Regex("\\s+")).first()
+        val candidates = shell("pidof $packageName")
+            .trim()
+            .split(Regex("\\s+"))
+            .filter { it.isNotEmpty() }
+        // On API 26 pidof matches the 15-char comm, so the test process (same
+        // prefix) can show up too; keep only the PID whose cmdline is the app.
+        candidates.firstOrNull { pid ->
+            shell("cat /proc/$pid/cmdline").trim('\u0000', '\n') == packageName
+        }?.let { return it }
         return shell("ps -A")
             .lineSequence()
             .map { it.trim().split(Regex("\\s+")) }

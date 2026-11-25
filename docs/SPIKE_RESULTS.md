@@ -65,6 +65,14 @@ Actual `createMockTag` signature observed with `getDeclaredMethods()`:
 There were no `Bundle` serialization differences: `marshall()` is identical in
 all three cases, so the semantic fallback comparison was not needed.
 
+### API 26
+
+Re-run for 0.3.0 on a GMD AOSP API 26 emulator (2026-11-25): `ParcelLayoutDiagnosticTest`
+reports 408 B and a byte-for-byte match against both the hand-written layout and
+`Tag.createMockTag`; the signature is `(byte[], int[], Bundle[])`. All 46 tests in
+`:nfc-test` passed, including REFLECTION, which needs no hidden-API policy on
+API 26.
+
 ## 3. `connect`/`read`/`write` behavior
 
 Identical on API 30, 34 and 36 (`files/limits-<api>.json` and `NfcTestLimits`

@@ -22,7 +22,7 @@ object TagFactory {
 
     // TagTechnology.NFC_A / TagTechnology.NDEF are public API, but their constants
     // are @hide. Values inlined from AOSP android.nfc.tech.TagTechnology
-    // (unchanged in API 30 through 36).
+    // (unchanged in API 26 through 36).
     private const val TECH_NFC_A = 1
     private const val TECH_NDEF = 6
 
@@ -160,7 +160,7 @@ object TagFactory {
         val args: Array<out Any> = if (method.parameterTypes.size == 4) {
             arrayOf<Any>(uid, techCodes, extras, 0L) // API 34+: cookie
         } else {
-            arrayOf<Any>(uid, techCodes, extras) // API 30-33
+            arrayOf<Any>(uid, techCodes, extras) // API 26-33
         }
 
         try {

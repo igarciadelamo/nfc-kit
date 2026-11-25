@@ -9,7 +9,7 @@
   <a href="https://jitpack.io/#igarciadelamo/nfc-kit"><img src="https://jitpack.io/v/igarciadelamo/nfc-kit.svg" alt="JitPack"></a>
   <a href="https://github.com/igarciadelamo/nfc-kit/actions/workflows/ci.yml"><img src="https://github.com/igarciadelamo/nfc-kit/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-blue.svg?style=flat-square" alt="License: Apache 2.0"></a>
-  <img src="https://img.shields.io/badge/minSdk-30-3DDC84.svg?style=flat-square&logo=android&logoColor=white" alt="minSdk 30">
+  <img src="https://img.shields.io/badge/minSdk-26-3DDC84.svg?style=flat-square&logo=android&logoColor=white" alt="minSdk 26">
 </p>
 
 ---
@@ -46,8 +46,8 @@ lifecycle it already implements. No test-only branches in your app.
 - **Automatic delivery** — `auto` mode uses the reader when enabled, falls back to an intent.
 - **Declarative tags** — describe UID and NDEF records in a small JSON file.
 - **Debug-only** — the injection module never ships in release builds.
-- **Verified locally** — instrumented suites run on API 30, 34 and 36 managed
-  devices, outside CI.
+- **Verified locally** — instrumented suites run on the managed devices listed
+  in [Verification](#verification), outside CI.
 
 > **Scope:** the `:nfc-test` module is compiled into the app under test as a
 > debug-only dependency. It cannot inject tags into a third-party APK or a
@@ -87,7 +87,8 @@ code: it is the reader-mode facade plus the `NfcReaders` swap point that
 - JDK 17 or newer.
 - Android SDK with `compileSdk` 37 to build this repository. The AARs declare
   `minCompileSdk` 30, so consumer apps can compile with 30 or newer.
-- AOSP API 30, 34 and 36 system images for Gradle Managed Devices.
+- AOSP API 26 system image for the compatibility suite, and AOSP API 30, 34 and
+  36 images for the main matrix.
 
 ## Getting started
 
@@ -254,8 +255,8 @@ repositories {
 }
 
 dependencies {
-    implementation("com.github.igarciadelamo.nfc-kit:nfc-reader:0.2.2")
-    debugImplementation("com.github.igarciadelamo.nfc-kit:nfc-test:0.2.2")
+    implementation("com.github.igarciadelamo.nfc-kit:nfc-reader:0.3.0")
+    debugImplementation("com.github.igarciadelamo.nfc-kit:nfc-test:0.3.0")
 }
 ```
 
@@ -274,10 +275,14 @@ The managed-device suites are **not** run in CI; run them locally:
 
 ```bash
 ./gradlew assembleDebugAndroidTest
+./gradlew :nfc-test:compatGroupAndroidTest
 ./gradlew :nfc-test:allDevicesGroupAndroidTest
 ./gradlew :sample:allDevicesGroupAndroidTest
 ./gradlew :sample-e2e:allDevicesGroupAndroidTest
 ```
+
+`compatGroupAndroidTest` runs the library tests on API 26, the `minSdk` floor;
+`allDevicesGroupAndroidTest` runs the main matrix on API 30, 34 and 36.
 
 To check the published artifacts locally:
 
@@ -300,13 +305,15 @@ starting more than one emulator at a time. To run one module and one API per
 command, use the per-API task names:
 
 ```bash
+./gradlew :nfc-test:api26DebugAndroidTest
 ./gradlew :nfc-test:api30DebugAndroidTest
 ./gradlew :nfc-test:api34DebugAndroidTest
 ./gradlew :nfc-test:api36DebugAndroidTest
 ```
 
 The same pattern applies to `:nfc-reader`, `:sample` and `:sample-e2e`. The
-`allDevicesGroupAndroidTest` aliases run a module across all three APIs.
+`compatGroupAndroidTest` alias runs API 26; `allDevicesGroupAndroidTest` runs
+API 30, 34 and 36.
 
 </details>
 
